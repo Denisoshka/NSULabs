@@ -10,7 +10,6 @@ const int BASE_NUMBERS[16] = {0, 1, 2, 3,
                               12, 13, 14, 15};
 const char * ALL_SYMBOLS = "0123456789abcdef";
 
-//блок проверок
 //в функции мы проверяемм на то что в записи числа нет цифр больше базы, посторонние элементы проверяем при переводе числа
 int Valid_Char(const char * OPERAND, const int BASE_FROM){
     const char * IND;
@@ -113,7 +112,7 @@ char * From_Decimal( long double decimal, const int BASE_TO, const int IS_FRACTI
 
 int main( void ) {
     int base_from, base_to, is_fractional, count_scan;
-    char main_operand[ 14 ]={0};
+    char main_operand[ 14 ];
     long double decimal_result;
 
     count_scan = scanf("%d%d", &base_from, &base_to );
@@ -142,3 +141,4 @@ int main( void ) {
     free( char_result );
     return 0;
 }
+
