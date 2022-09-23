@@ -116,7 +116,7 @@ int main( void ) {
     long double decimal_result;
 
     count_scan = scanf("%d%d", &base_from, &base_to );
-    scanf("%s", main_operand );
+    scanf("%13s", main_operand );
     if ( count_scan != 2 ){
         printf("bad input" );
         return 0;
