@@ -202,7 +202,7 @@ int main( void )
     decimal_result = To_Decimal( base_from, K_is_fractional, K_main_operand_len, lower_main_operand );
     char_result = From_Decimal( decimal_result, base_to, K_is_fractional );
 
-    printf("%s", char_result );
+    printf("%s\n", char_result );
 
     free( char_result );
     return 0;
