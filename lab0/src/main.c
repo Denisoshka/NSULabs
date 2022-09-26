@@ -123,7 +123,7 @@ double To_Decimal( const int K_number_base1, const int K_is_fractional, const si
 
     for ( size_t index = 0; index < K_dot_index; index++ )
     {
-        result += necessary_number( K_operand[index] ) * pow(K_number_base1,  (int)K_dot_index - 1 - (int)index ) );
+        result += necessary_number( K_operand[index] ) * pow(K_number_base1,  (int)K_dot_index - 1 - (int)index );
     }
     if ( K_is_fractional )
     {
