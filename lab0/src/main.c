@@ -29,7 +29,7 @@ char * Lower_Char(const char * K_operand, const size_t K_operand_len)
 {
     char * new_char = calloc( K_operand_len, sizeof(char) );
 
-    for ( int index = 0; index < K_operand_len; index++)
+    for ( size_t index = 0; index < K_operand_len; index++)
     {
         new_char[ index ] = (char)tolower( K_operand[ index ] );
     }
@@ -119,17 +119,17 @@ int Fractional( const char *K_operand )
 double To_Decimal( const int K_number_base1, const int K_is_fractional, const size_t K_operand_len,  const char * K_operand )
 {
     double result = 0;
-    const size_t K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  Dot_Index(K_operand) : K_operand_len;
+    const int K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  (int) Dot_Index(K_operand) : (int) K_operand_len;
 
     for ( size_t index = 0; index < K_dot_index; index++ )
     {
-        result += necessary_number( K_operand[index] ) * pow(K_number_base1, K_dot_index - 1 - index );
+        result += necessary_number( K_operand[index] ) * pow(K_number_base1, ( K_dot_index - 1 - index ) );
     }
     if ( K_is_fractional )
     {
         for ( size_t index = K_dot_index + 1; index < K_operand_len; index++ )
         {
-            result += necessary_number( K_operand[index] ) * pow(K_number_base1, K_dot_index - index );
+            result += necessary_number( K_operand[index] ) * pow(K_number_base1, ( K_dot_index - index ) );
         }
     }
     return result;
@@ -180,7 +180,7 @@ int main( void )
 
     if ( ( count_scan_systems != 2 ) || ( count_scan_number != 1 ))
     {
-        printf("bad input" );
+        printf("bad input\n" );
         return 0;
     }
 
@@ -191,7 +191,7 @@ int main( void )
 //блок с проверкой на соответствие баз и соответствия чисел числа базе
     if ( !Valid_Bases(base_from, base_to ) || !Valid_Char(lower_main_operand, base_from, K_main_operand_len) )
     {
-        printf("bad input" );
+        printf("bad input\n" );
         return 0;
     }
 //блок проверок закончен
