@@ -119,17 +119,17 @@ int Fractional( const char *K_operand )
 double To_Decimal( const int K_number_base1, const int K_is_fractional, const size_t K_operand_len,  const char * K_operand )
 {
     double result = 0;
-    const int K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  (int) Dot_Index(K_operand) : (int) K_operand_len;
+    const size_t K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  (int) Dot_Index(K_operand) : (int) K_operand_len;
 
     for ( size_t index = 0; index < K_dot_index; index++ )
     {
-        result += necessary_number( K_operand[index] ) * pow(K_number_base1, ( K_dot_index - 1 - index ) );
+        result += necessary_number( K_operand[index] ) * pow(K_number_base1,  (int)K_dot_index - 1 - (int)index ) );
     }
     if ( K_is_fractional )
     {
         for ( size_t index = K_dot_index + 1; index < K_operand_len; index++ )
         {
-            result += necessary_number( K_operand[index] ) * pow(K_number_base1, ( K_dot_index - index ) );
+            result += necessary_number( K_operand[index] ) * pow(K_number_base1, (int)K_dot_index - (int)index );
         }
     }
     return result;
