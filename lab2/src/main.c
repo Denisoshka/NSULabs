@@ -25,7 +25,7 @@ char * scan_char( size_t * len_link )
 
 int correct_string( const char * string, size_t string_len)
 {
-    int arr [10] = {};
+    int arr [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     for( size_t index = 0; index < string_len; index++ )
     {
         if ( H_zero <= string [index ] && string[ index ] <= H_nine )
@@ -96,8 +96,6 @@ void swap_symbols(char * string, const size_t string_len, const size_t first_nec
 
 void print_permutation( char * string, size_t string_len, size_t permutation_quantity)
 {
-    char sub_char;
-
     for(size_t iteration = 0; iteration < permutation_quantity; iteration++)
     {
         size_t proof_of_start = 0;
@@ -126,7 +124,7 @@ int main(void) {
     char *main_string;
 
     main_string = scan_char(&main_string_len);
-    count_of_scan = scanf("%Iu", &permutations_quantity);
+    count_of_scan = scanf("%Ilu", &permutations_quantity);
 
     if ( !(correct_string(main_string, main_string_len) ) )
     {
