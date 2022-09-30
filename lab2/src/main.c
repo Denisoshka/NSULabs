@@ -80,7 +80,7 @@ void swap_symbols(char * string, const size_t string_len, const size_t first_nec
     string[ second_necessary_index ] = sub_char;
 
     size_t index = 0;
-    size_t half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
+    const size_t half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
     size_t front_index, back_index;
 
     for(; index < half_of_tail; index++  )
