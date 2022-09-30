@@ -124,7 +124,7 @@ int main(void) {
     char *main_string;
 
     main_string = scan_char(&main_string_len);
-    count_of_scan = scanf("%Ilu", &permutations_quantity);
+    count_of_scan = scanf("%llu", &permutations_quantity);
 
     if ( !(correct_string(main_string, main_string_len) ) )
     {
