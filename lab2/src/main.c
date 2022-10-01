@@ -80,8 +80,8 @@ void swap_symbols(char * string, const size_t string_len, const size_t first_nec
     string[ second_necessary_index ] = sub_char;
 
     size_t index = 0;
+    size_t front_index = 0, back_index = 0;
     const size_t half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
-    size_t front_index, back_index;
 
     for(; index < half_of_tail; index++  )
     {
@@ -98,7 +98,7 @@ void print_permutation( char * string, size_t string_len, size_t permutation_qua
 {
     for(size_t iteration = 0; iteration < permutation_quantity; iteration++)
     {
-        size_t proof_of_start = 0;
+        size_t proof_of_start;
         size_t first_necessary_index = 0, second_necessary_index = 0;
 
         proof_of_start = find_first_necessary_index( string, string_len, &first_necessary_index );
@@ -124,7 +124,7 @@ int main(void) {
     char *main_string;
 
     main_string = scan_char(&main_string_len);
-    count_of_scan = scanf("%lu", &permutations_quantity);
+    count_of_scan = scanf("%llu", &permutations_quantity);
 
     if ( !(correct_string(main_string, main_string_len) ) )
     {
