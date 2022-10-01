@@ -44,13 +44,12 @@ int correct_string( const char * string, int string_len)
 
 int find_first_necessary_index( const char * string, int string_len )
 {
-    int first_necessary_index = -1 , proof_of_start = 0;
+    int first_necessary_index = -1;
     for ( int first_index = 0; first_index < string_len - 1; first_index++ )
     {
         if ( string[ first_index ] < string[ first_index + 1])
         {
             first_necessary_index = first_index;
-            proof_of_start++;
         }
     }
     return first_necessary_index;
@@ -78,13 +77,12 @@ void swap_symbols(char * string, const int string_len, const int first_necessary
     string[ second_necessary_index ] = sub_char;
 
     int index = 0;
-    int front_index, back_index;
     const int half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
 
     for(; index < half_of_tail; index++  )
     {
-        front_index = first_necessary_index + 1 + index;
-        back_index = string_len - 1 - index;
+        int front_index = first_necessary_index + 1 + index;
+        int back_index = string_len - 1 - index;
 
         sub_char = string[ front_index ];
         string[ front_index ] = string[ back_index ];
@@ -96,8 +94,8 @@ void print_permutation( char * string, int string_len, int permutation_quantity)
 {
     for(int iteration = 0; iteration < permutation_quantity; iteration++)
     {
-        int first_necessary_index = find_first_necessary_index( string, string_len ), 
-        second_necessary_index  = find_second_necessary_index( string, string_len, first_necessary_index );
+        int first_necessary_index = find_first_necessary_index( string, string_len ),
+                second_necessary_index  = find_second_necessary_index( string, string_len, first_necessary_index );
 
         if ( first_necessary_index == -1 )
         {
