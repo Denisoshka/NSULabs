@@ -9,12 +9,15 @@ char * scan_char(int * len_link )
 
     char symbol;
     char * string = malloc( sizeof(char) );
-
+    if (string == NULL)
+    {
+        return string;
+    }
     while ((symbol = getchar()) != '\n')
     {
+
+        string = realloc(string, sizeof(char) * ( ++string_len ) );
         string[string_len - 1] = symbol;
-        string_len++;
-        string = realloc(string, sizeof(char) * string_len );
     }
 
     string[string_len - 1] = '\0';
@@ -115,6 +118,11 @@ int main(void) {
     char *main_string;
 
     main_string = scan_char(&main_string_len);
+    if ( main_string == NULL )
+    {
+        return 0;
+    }
+    
     count_of_scan = scanf("%d", &permutations_quantity);
 
     if ( !(correct_string(main_string, main_string_len) ) )
