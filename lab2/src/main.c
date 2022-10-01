@@ -79,7 +79,7 @@ void swap_symbols(char * string, const int string_len, const int first_necessary
 
     int index = 0;
     int front_index, back_index;
-    const size_t half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
+    const int half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
 
     for(; index < half_of_tail; index++  )
     {
