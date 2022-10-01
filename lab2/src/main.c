@@ -96,11 +96,8 @@ void print_permutation( char * string, int string_len, int permutation_quantity)
 {
     for(int iteration = 0; iteration < permutation_quantity; iteration++)
     {
-        int proof_of_start;
-        int first_necessary_index = 0, second_necessary_index = 0;
-
-        first_necessary_index = find_first_necessary_index( string, string_len );
-        second_necessary_index = find_second_necessary_index( string, string_len, first_necessary_index );
+        int first_necessary_index = find_first_necessary_index( string, string_len ), 
+        second_necessary_index  = find_second_necessary_index( string, string_len, first_necessary_index );
 
         if ( first_necessary_index == -1 )
         {
