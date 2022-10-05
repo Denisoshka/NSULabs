@@ -14,20 +14,21 @@ const char * K_all_symbols = "0123456789abcdef";
 
 int Valid_Bases(const int K_base1, const int K_base2);
 int Valid_Char(const char * K_operand, const int K_base_from, const size_t operand_len);
-size_t Dot_Index(const char * K_where_search);
+
 int Fractional( const char * K_operand );
 int necessary_number(const char symbol);
 
-double To_Decimal( const int K_number_base1, const int K_is_fractional, const size_t K_operand_len,  const char * K_operand );
+double To_Double_Decimal( const int K_number_base1, const size_t K_operand_len,  const char * K_operand );
 
-char * From_Decimal( double decimal, const int BASE_TO, const int K_is_fractional );
+char * From_Double_To_Decimal( double decimal, const int BASE_TO );
 char * Lower_Char(const char * K_operand, const size_t K_operand_len);
 
+size_t Dot_Index(const char * K_where_search);
 
 
 char * Lower_Char(const char * K_operand, const size_t K_operand_len)
 {
-    char * new_char = calloc( K_operand_len, sizeof(char) );
+    char * new_char = calloc( K_operand_len+1, sizeof(char) );
 
     for ( size_t index = 0; index < K_operand_len; index++)
     {
@@ -116,26 +117,25 @@ int Fractional( const char *K_operand )
     return 0;
 }
 
-double To_Decimal( const int K_number_base1, const int K_is_fractional, const size_t K_operand_len,  const char * K_operand )
+double To_Double_Decimal( const int K_number_base1, const size_t K_operand_len,  const char * K_operand )
 {
     double result = 0;
     const size_t K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  (int) Dot_Index(K_operand) : (int) K_operand_len;
 
     for ( size_t index = 0; index < K_dot_index; index++ )
     {
-        result += necessary_number( K_operand[index] ) * pow(K_number_base1,  (int)K_dot_index - 1 - (int)index );
+        result += necessary_number( K_operand[index] ) * pow(K_number_base1,  (int)K_dot_index - 1 - (int)index ) ;
     }
-    if ( K_is_fractional )
+
+    for ( size_t index = K_dot_index + 1; index < K_operand_len; index++ )
     {
-        for ( size_t index = K_dot_index + 1; index < K_operand_len; index++ )
-        {
-            result += necessary_number( K_operand[index] ) * pow(K_number_base1, (int)K_dot_index - (int)index );
-        }
+        result += necessary_number( K_operand[index] ) * pow(K_number_base1, (int)K_dot_index - (int)index );
     }
+
     return result;
 }
 
-char * From_Decimal( double decimal, const int BASE_TO, const int K_is_fractional )
+char * From_Double_To_Decimal( double decimal, const int BASE_TO )
 {
     const int AFTER_POINT = 12;
     int int_size = 0;
@@ -146,7 +146,50 @@ char * From_Decimal( double decimal, const int BASE_TO, const int K_is_fractiona
         int_size++;
     }while( ( int )int_decimal >= pow(BASE_TO, int_size ) );
 
-    const int decimal_size = ( K_is_fractional ) ? int_size + 1 + AFTER_POINT : int_size;
+    const int decimal_size = int_size + 2 + AFTER_POINT;
+    char * result = calloc(decimal_size, sizeof( char ) );
+
+    for( int ind = int_size-1; ind >= 0; ind-- ) {
+        result[ind] = K_all_symbols[int_decimal % BASE_TO];
+        int_decimal /= BASE_TO;
+
+
+        result[int_size] = K_dot;
+    }
+    for ( int index = int_size + 1; index < decimal_size; index++ )
+    {
+        fractional_part *= BASE_TO;
+        result[ index ] = K_all_symbols[ (int)fractional_part ];
+        fractional_part -= (int)fractional_part;
+    }
+
+    result[ decimal_size ] = '\0';
+    return result;
+}
+
+long long int To_Int_Decimal( const int K_number_base1, const size_t K_operand_len,  const char * K_operand )
+{
+    long long int result = 0;
+    const size_t K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  (int) Dot_Index(K_operand) : (int) K_operand_len;
+
+    for ( size_t index = 0; index < K_dot_index; index++ )
+    {
+        result += necessary_number( K_operand[index] ) * pow(K_number_base1,  (int)K_dot_index - 1 - (int)index ) ;
+    }
+
+    return result;
+}
+
+char * From_Int_To_Decimal( long long int decimal, const int BASE_TO )
+{
+    int int_size = 0;
+    long long int int_decimal = decimal;
+
+    do{
+        int_size++;
+    }while( ( int )int_decimal >= pow(BASE_TO, int_size ) );
+
+    const int decimal_size = int_size + 1;
     char * result = calloc(decimal_size, sizeof( char ) );
 
     for( int ind = int_size-1; ind >= 0; ind-- )
@@ -154,25 +197,16 @@ char * From_Decimal( double decimal, const int BASE_TO, const int K_is_fractiona
         result[ ind ] = K_all_symbols[ int_decimal % BASE_TO ];
         int_decimal /= BASE_TO;
     }
-    if ( K_is_fractional ) {
-
-        result[ int_size ] = K_dot;
-
-        for ( int index = int_size + 1; index < decimal_size; index++ )
-        {
-            fractional_part *= BASE_TO;
-            result[ index ] = K_all_symbols[ (int) fractional_part ];
-            fractional_part -= (int) fractional_part;
-        }
-    }
-
+    result[ decimal_size ] = '\0';
     return result;
 }
+
 
 int main( void )
 {
     int base_from, base_to, count_scan_systems, count_scan_number;
-    double decimal_result;
+    double double_decimal_result;
+    long long int int_decimal_result;
     char main_operand[ 14 ];
 
     count_scan_systems = scanf("%d%d", &base_from, &base_to );
@@ -198,8 +232,15 @@ int main( void )
 
     char *char_result;
 // здесь будем делать проверку на дробную часть
-    decimal_result = To_Decimal( base_from, K_is_fractional, K_main_operand_len, lower_main_operand );
-    char_result = From_Decimal( decimal_result, base_to, K_is_fractional );
+
+    if (K_is_fractional) {
+        double_decimal_result = double_decimal_result = To_Double_Decimal(  base_from, K_main_operand_len, lower_main_operand );
+        char_result = From_Double_To_Decimal(double_decimal_result, base_to);
+    }
+    else {
+        int_decimal_result = To_Int_Decimal(base_from, K_main_operand_len, lower_main_operand);
+        char_result = From_Int_To_Decimal( int_decimal_result, base_to);
+    }
 
     printf("%s\n", char_result );
     free(lower_main_operand);
