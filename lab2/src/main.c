@@ -43,8 +43,8 @@ void Scan_Pattern( ST_vector * our_vector )
         }
         else
         {
-            our_vector->pattern_len++;
-            our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len);
+
+            our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len+1 );
             our_vector->pattern[ index ] = '\0';
             return;
         }
