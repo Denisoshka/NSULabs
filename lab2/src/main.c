@@ -33,7 +33,7 @@ void Scan_Pattern( ST_vector * our_vector )
     for( size_t index = 0 ; ; index++)
     {
         if ( 1 != fread(&symbol, sizeof(char), 1, stdin ) ){
-            
+
         };
         if ( symbol != '\n' )
         {
@@ -117,7 +117,7 @@ void Swap_Symbols( ST_vector * our_vector, const size_t first_necessary_index, c
     }
 }
 
-void print_permutation( ST_vector * our_vector , int permutation_quantity)
+void print_permutation( ST_vector * our_vector , size_t permutation_quantity)
 {
     for(size_t iteration = 0; iteration < permutation_quantity; iteration++)
     {
@@ -128,7 +128,7 @@ void print_permutation( ST_vector * our_vector , int permutation_quantity)
             return;
         }
         else {
-            
+
             size_t second_necessary_index = Find_Second_Necessary_Index(our_vector, (size_t)first_necessary_index);
 
             Swap_Symbols(our_vector, (size_t)first_necessary_index, second_necessary_index);
@@ -160,7 +160,7 @@ int main(void)
         return 0;
     }
 
-    print_permutation( &vector, permutations_quantity);
+    print_permutation( &vector, (size_t)permutations_quantity);
 
 
     Destroy_Vector( &vector );
