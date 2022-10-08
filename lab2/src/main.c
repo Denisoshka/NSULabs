@@ -32,7 +32,9 @@ void Scan_Pattern( ST_vector * our_vector )
     char symbol;
     for( size_t index = 0 ; ; index++)
     {
-        fread(&symbol, sizeof(char), 1, stdin );
+        if ( 1 != fread(&symbol, sizeof(char), 1, stdin ) ){
+            
+        };
         if ( symbol != '\n' )
         {
             our_vector->pattern_len++;
@@ -51,13 +53,13 @@ void Scan_Pattern( ST_vector * our_vector )
 size_t Correct_String( ST_vector * our_vector )
 {
     int arr [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    for( int index = 0; index < our_vector->pattern_len ; index++ )
+    for(size_t index = 0; index < our_vector->pattern_len ; index++ )
     {
         if ( H_zero <= our_vector->pattern[index ] && our_vector->pattern[ index ] <= H_nine )
             arr[ our_vector->pattern[ index ] - H_zero ]++;
         else return 0;
     }
-    for( int index = 0; index < our_vector->pattern_len; index++ )
+    for( size_t index = 0; index < our_vector->pattern_len; index++ )
     {
         if( arr[ index ] > 1)
         {
@@ -70,7 +72,7 @@ size_t Correct_String( ST_vector * our_vector )
 int Find_First_Necessary_Index( ST_vector * our_vector )
 {
     int first_necessary_index = -1;
-    for ( int first_index = 0; first_index < our_vector->pattern_len - 1; first_index++ )
+    for ( size_t first_index = 0; first_index < our_vector->pattern_len - 1; first_index++ )
     {
         if ( our_vector->pattern[ first_index ] < our_vector->pattern[ first_index + 1])
         {
@@ -117,7 +119,7 @@ void Swap_Symbols( ST_vector * our_vector, const size_t first_necessary_index, c
 
 void print_permutation( ST_vector * our_vector , int permutation_quantity)
 {
-    for(int iteration = 0; iteration < permutation_quantity; iteration++)
+    for(size_t iteration = 0; iteration < permutation_quantity; iteration++)
     {
         int first_necessary_index = Find_First_Necessary_Index( our_vector);
 
@@ -126,9 +128,10 @@ void print_permutation( ST_vector * our_vector , int permutation_quantity)
             return;
         }
         else {
+            
             size_t second_necessary_index = Find_Second_Necessary_Index(our_vector, (size_t)first_necessary_index);
 
-            Swap_Symbols(our_vector, first_necessary_index, second_necessary_index);
+            Swap_Symbols(our_vector, (size_t)first_necessary_index, second_necessary_index);
 
             printf("%s\n", our_vector->pattern);
         }
