@@ -1,41 +1,63 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char H_zero = '0', H_nine = '9';
 
-char * scan_char(int * len_link )
+typedef struct ST_vector
 {
-    int string_len = 1;
+    size_t pattern_len;
+    char * pattern;
+}ST_vector;
 
-    char symbol;
-    char * string = malloc( sizeof(char) );
-        
-    while ((symbol = getchar()) != '\n')
-    {
-        string_len++;
-        string = realloc(string, sizeof(char) * ( string_len ) );
-        string[string_len - 2] = symbol;
-        if ( string == NULL ){
-            return string;
-        }
-    }
 
-    string[string_len - 1] = '\0';
-    *len_link = string_len - 1;
-    return string;
+ST_vector Create_Vector(void)
+{
+    ST_vector our_vector = {
+            .pattern_len = 0,
+            .pattern = NULL,
+    };
+    return our_vector;
 }
 
 
-int correct_string( const char * string, int string_len)
+void Destroy_Vector( ST_vector * our_vector)
+{
+    free(our_vector->pattern);
+}
+
+const char H_zero = '0', H_nine = '9';
+
+
+void Scan_Pattern( ST_vector * our_vector )
+{
+    char symbol;
+    for( size_t index = 0 ; ; index++)
+    {
+        fread(&symbol, sizeof(char), 1, stdin );
+        if ( symbol != '\n' )
+        {
+            our_vector->pattern_len++;
+            our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len);
+            our_vector->pattern[index] = symbol;
+        }
+        else
+        {
+            our_vector->pattern[ our_vector->pattern_len ] = '\0';
+            return;
+        }
+    }
+}
+
+
+size_t Correct_String( ST_vector * our_vector )
 {
     int arr [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    for( int index = 0; index < string_len; index++ )
+    for( int index = 0; index < our_vector->pattern_len ; index++ )
     {
-        if ( H_zero <= string [index ] && string[ index ] <= H_nine )
-            arr[ string[ index ] - H_zero ]++;
+        if ( H_zero <= our_vector->pattern[index ] && our_vector->pattern[ index ] <= H_nine )
+            arr[ our_vector->pattern[ index ] - H_zero ]++;
         else return 0;
     }
-    for( int index = 0; index < string_len; index++ )
+    for( int index = 0; index < our_vector->pattern_len; index++ )
     {
         if( arr[ index ] > 1)
         {
@@ -45,12 +67,12 @@ int correct_string( const char * string, int string_len)
     return 1;
 }
 
-int find_first_necessary_index( const char * string, int string_len )
+int Find_First_Necessary_Index( ST_vector * our_vector )
 {
     int first_necessary_index = -1;
-    for ( int first_index = 0; first_index < string_len - 1; first_index++ )
+    for ( int first_index = 0; first_index < our_vector->pattern_len - 1; first_index++ )
     {
-        if ( string[ first_index ] < string[ first_index + 1])
+        if ( our_vector->pattern[ first_index ] < our_vector->pattern[ first_index + 1])
         {
             first_necessary_index = first_index;
         }
@@ -58,12 +80,12 @@ int find_first_necessary_index( const char * string, int string_len )
     return first_necessary_index;
 }
 
-int find_second_necessary_index( const char * string, int string_len, int first_necessary_index )
+size_t Find_Second_Necessary_Index( ST_vector * our_vector, size_t first_necessary_index )
 {
-    int second_necessary_index = 0;
-    for ( int second_index = first_necessary_index + 1; second_index < string_len; second_index++)
+    size_t second_necessary_index = 0;
+    for ( size_t second_index = first_necessary_index + 1; second_index < our_vector->pattern_len; second_index++)
     {
-        if ( string[ first_necessary_index ] < string[ second_index ])
+        if ( our_vector->pattern[ first_necessary_index ] < our_vector->pattern[ second_index ])
         {
             second_necessary_index = second_index;
         }
@@ -71,67 +93,73 @@ int find_second_necessary_index( const char * string, int string_len, int first_
     return second_necessary_index;
 }
 
-void swap_symbols(char * string, const int string_len, const int first_necessary_index, const int second_necessary_index)
+void Swap_Symbols( ST_vector * our_vector, const size_t first_necessary_index, const size_t second_necessary_index)
 {
     char sub_char;
 
-    sub_char = string[ first_necessary_index ];
-    string[ first_necessary_index ] = string[ second_necessary_index ];
-    string[ second_necessary_index ] = sub_char;
+    sub_char = our_vector->pattern[ first_necessary_index ];
+    our_vector->pattern[ first_necessary_index ] = our_vector->pattern[ second_necessary_index ];
+    our_vector->pattern[ second_necessary_index ] = sub_char;
 
-    int index = 0;
-    const int half_of_tail = ( string_len - ( first_necessary_index + 1 ) ) / 2;
+    size_t index = 0;
+    size_t half_of_tail = ( our_vector->pattern_len - ( first_necessary_index + 1 ) ) / 2;
 
     for(; index < half_of_tail; index++  )
     {
-        int front_index = first_necessary_index + 1 + index;
-        int back_index = string_len - 1 - index;
+        size_t front_index = first_necessary_index + 1 + index;
+        size_t back_index = our_vector->pattern_len - 1 - index;
 
-        sub_char = string[ front_index ];
-        string[ front_index ] = string[ back_index ];
-        string[ back_index ] = sub_char;
+        sub_char = our_vector->pattern[ front_index ];
+        our_vector->pattern[ front_index ] = our_vector->pattern[ back_index ];
+        our_vector->pattern[ back_index ] = sub_char;
     }
 }
 
-void print_permutation( char * string, int string_len, int permutation_quantity)
+void print_permutation( ST_vector * our_vector , int permutation_quantity)
 {
     for(int iteration = 0; iteration < permutation_quantity; iteration++)
     {
-        int first_necessary_index = find_first_necessary_index( string, string_len ),
-                second_necessary_index  = find_second_necessary_index( string, string_len, first_necessary_index );
+        int first_necessary_index = Find_First_Necessary_Index( our_vector);
 
         if ( first_necessary_index == -1 )
         {
             return;
         }
-        swap_symbols(string, string_len, first_necessary_index, second_necessary_index );
+        else {
+            size_t second_necessary_index = Find_Second_Necessary_Index(our_vector, (size_t)first_necessary_index);
 
-        printf( "%s\n", string);
+            Swap_Symbols(our_vector, first_necessary_index, second_necessary_index);
+
+            printf("%s\n", our_vector->pattern);
+        }
     }
 }
 
 
-int main(void) {
+int main(void)
+{
+    int permutations_quantity;
+    ST_vector vector;
+    vector = Create_Vector();
+    Scan_Pattern( &vector );
 
-    int permutations_quantity, main_string_len, count_of_scan;
-
-    char *main_string;
-
-    main_string = scan_char(&main_string_len);
-    if ( main_string == NULL )
+    if ( scanf("%d", &permutations_quantity)!=1  )
     {
-        return 0;
-    }
-
-    count_of_scan = scanf("%d", &permutations_quantity);
-
-    if ( ( !(correct_string(main_string, main_string_len) ) ) || ( count_of_scan != 1 ) )
-    {
+        Destroy_Vector( &vector );
         printf("bad input\n");
         return 0;
     }
-    print_permutation( main_string, main_string_len, permutations_quantity);
 
-    free( main_string);
+    if ( !( Correct_String( &vector ) ) )
+    {
+        Destroy_Vector( &vector );
+        printf("bad input\n");
+        return 0;
+    }
+
+    print_permutation( &vector, permutations_quantity);
+
+
+    Destroy_Vector( &vector );
     return 0;
 }
