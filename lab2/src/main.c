@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 const char H_zero = '0', H_nine = '9';
-const int K_true = 1, K_false = 0;
+const int K_true = 1, K_false = 0, K_loop_not_start = -1;
 
 typedef struct ST_vector
 {
@@ -73,7 +73,8 @@ int Correct_String( ST_vector * our_vector )
 
 int Find_First_Necessary_Index( ST_vector * our_vector )
 {
-    int first_necessary_index = -1;
+    int first_necessary_index = K_loop_not_start;
+
     for ( int first_index = 0; first_index < our_vector->pattern_len - 1; first_index++ )
     {
         if ( our_vector->pattern[ first_index ] < our_vector->pattern[ first_index + 1])
@@ -125,11 +126,11 @@ void print_permutation( ST_vector * our_vector , int permutation_quantity )
     {
         int first_necessary_index = Find_First_Necessary_Index( our_vector );
 
-        if ( first_necessary_index == -1 )
+        if ( first_necessary_index == K_loop_not_start )
         {
             return;
         }
-        else 
+        else
         {
             int second_necessary_index = Find_Second_Necessary_Index( our_vector, first_necessary_index );
 
@@ -139,7 +140,6 @@ void print_permutation( ST_vector * our_vector , int permutation_quantity )
         }
     }
 }
-
 
 int main(void)
 {
