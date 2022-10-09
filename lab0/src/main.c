@@ -46,7 +46,7 @@ void Scan_Number( ST_vector * our_vector)
 
             if(fread(&symbol, sizeof(char), 1, stdin) != 1)
             {
-                
+
             }
             if (symbol != '\n') {
                 our_vector->number_len++;
@@ -179,7 +179,6 @@ double From_Char_To_Double( ST_vector * our_vector, const int K_number_base1)
 
 void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_base_to )
 {
-    const int K_after_dot = K_max_after_dot_numbers;
     int result_non_fractional_part_len = 0;
     long int int_part_of_decimal = ( long int )decimal;
     double fractional_part_of_decimal = decimal - ( double )int_part_of_decimal;
@@ -188,7 +187,7 @@ void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_b
         result_non_fractional_part_len++;
     }while( int_part_of_decimal >= (long int)pow(K_base_to, result_non_fractional_part_len ) );
 
-    int result_len = result_non_fractional_part_len + 1 + K_after_dot;
+    int result_len = result_non_fractional_part_len + 1 + K_max_after_dot_numbers;
     our_vector->Char_number = realloc( our_vector->Char_number, (result_len + 1) * sizeof(char));
 
     for( int back_index = result_non_fractional_part_len - 1; back_index >= 0; back_index-- ) {
@@ -211,11 +210,11 @@ void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_b
 long long int From_Char_To_Int( ST_vector * our_vector, const int K_number_base_from)
 {
     long long int result = 0;
-    int back_index;
+    
 
     for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
     {
-        back_index = our_vector->dot_index - 1 - front_index;
+        int back_index = our_vector->dot_index - 1 - front_index;
         /*back_index - отвечает за то в какую степень будем возводить число
           front_index - отвечает за расположение числа в строке */
         result += (long long int)Necessary_Number( our_vector->Char_number[ front_index ] ) * (long long int)pow(K_number_base_from, back_index ) ;
