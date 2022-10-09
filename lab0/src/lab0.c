@@ -188,9 +188,11 @@ void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_b
     }while( int_part_of_decimal >= (long int)pow(K_base_to, result_non_fractional_part_len ) );
 
     int result_len = result_non_fractional_part_len + 1 + K_max_after_dot_numbers;
+    
     our_vector->Char_number = realloc( our_vector->Char_number, (result_len + 1) * sizeof(char));
 
-    for( int back_index = result_non_fractional_part_len - 1; back_index >= 0; back_index-- ) {
+    for( int back_index = result_non_fractional_part_len - 1; back_index >= 0; back_index-- )
+    {
         our_vector->Char_number[back_index] = K_all_symbols[int_part_of_decimal % K_base_to];
         int_part_of_decimal /= K_base_to;
     }
@@ -210,7 +212,7 @@ void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_b
 long long int From_Char_To_Int( ST_vector * our_vector, const int K_number_base_from)
 {
     long long int result = 0;
-    
+
     for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
     {
         int back_index = our_vector->dot_index - 1 - front_index;
