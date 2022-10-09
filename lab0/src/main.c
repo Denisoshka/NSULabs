@@ -37,7 +37,7 @@ void Scan_Number( ST_vector * our_vector)
     char symbol;
     if (fread(&symbol, sizeof(char), 1, stdin) != 1)
     {
-
+//        здесь должен быть код для того что бы что то сделать с возвращаемым значением 
     }
 
     if ( symbol == '\n' ) //  как я понял после scanf указатель на чтение строки застывает на \n и этот костыль избавляет нас от этой проблемы
@@ -46,7 +46,7 @@ void Scan_Number( ST_vector * our_vector)
 
             if(fread(&symbol, sizeof(char), 1, stdin) != 1)
             {
-
+//              здесь должен быть код для того что бы что то сделать с возвращаемым значением 
             }
             if (symbol != '\n') {
                 our_vector->number_len++;
@@ -210,7 +210,7 @@ void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_b
 long long int From_Char_To_Int( ST_vector * our_vector, const int K_number_base_from)
 {
     long long int result = 0;
-    
+
 
     for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
     {
@@ -248,7 +248,6 @@ int main( void )
 
     ST_vector main_vector = Make_Vector();
     Scan_Number( &main_vector );
-//
 
     Prepare_String( &main_vector);
 
