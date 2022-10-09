@@ -49,7 +49,7 @@ void ScanPattern( ST_vector * our_vector )
 
 int IsCorrectString( const ST_vector * our_vector )
 {
-    int arr [10] = {};
+    int arr [10] = {0};
     for(int index = 0; index < our_vector->pattern_len ; index++ )
     {
         if ( '0' <= our_vector->pattern[index ] && our_vector->pattern[ index ] <= '9' )
@@ -156,8 +156,9 @@ void AreAllConditionComplied( ST_vector * our_vector, int count_of_scan)
 }
 
 
-void FinishWithExitSuccess(ST_vector * our_vector)
+void FinishWithExitSuccess(ST_vector * our_vector )
 {
+    DestroyVector( our_vector );
     exit( EXIT_SUCCESS );
 }
 
