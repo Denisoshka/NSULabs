@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 const int K_base_numbers[16] = {0, 1, 2, 3,
                                 4, 5, 6, 7,
@@ -36,19 +35,25 @@ const char * K_all_symbols = "0123456789abcdef";
 void Scan_Number( ST_vector * our_vector)
 {
     char symbol;
-    fread(&symbol, sizeof(char), 1, stdin);
+    if (fread(&symbol, sizeof(char), 1, stdin) != 1)
+    {
+
+    }
 
     if ( symbol == '\n' ) //  как я понял после scanf указатель на чтение строки застывает на \n и этот костыль избавляет нас от этой проблемы
     {
         for (int index = 0; index < K_max_input_number_len; index++) {
 
-            fread(&symbol, sizeof(char), 1, stdin);
+            if(fread(&symbol, sizeof(char), 1, stdin) != 1)
+            {
+                
+            }
             if (symbol != '\n') {
                 our_vector->number_len++;
                 our_vector->Char_number = realloc(our_vector->Char_number,sizeof(char) * ((our_vector->number_len) + 1));
                 our_vector->Char_number[index] = symbol;
             } else {
-                our_vector->Char_number[index] = '\0';
+                our_vector->Char_number[index] = K_end_of_string;
                 return;
             }
         }
@@ -200,7 +205,7 @@ void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_b
         fractional_part_of_decimal -= (int)fractional_part_of_decimal;
     }
 
-    our_vector->Char_number[ result_len ] = '\0';
+    our_vector->Char_number[ result_len ] = K_end_of_string;
 }
 
 long long int From_Char_To_Int( ST_vector * our_vector, const int K_number_base_from)
@@ -233,7 +238,7 @@ void From_Int_To_Char( ST_vector * our_vector, long long int int_number, const l
         our_vector->Char_number[ back_index ] = K_all_symbols[ int_number % K_base_to ];
         int_number /= K_base_to;
     }
-    our_vector->Char_number[ result_len ] = '\0';
+    our_vector->Char_number[ result_len ] = K_end_of_string;
 }
 
 
@@ -248,7 +253,7 @@ int main( void )
 
     Prepare_String( &main_vector);
 
-    if (main_vector.Char_number[0] =='\0' || !Valid_Bases(base_from, base_to) || !Valid_Char(&main_vector, base_from) || (count_of_scan_systems != 2))
+    if (main_vector.Char_number[0] ==K_end_of_string || !Valid_Bases(base_from, base_to) || !Valid_Char(&main_vector, base_from) || (count_of_scan_systems != 2))
     {
         printf("bad input\n");
         Destroy_Vector( &main_vector);
@@ -258,13 +263,13 @@ int main( void )
     if ( main_vector.fractional){
         double result = From_Char_To_Double( &main_vector, base_from );
         From_Double_To_Char( &main_vector, result, base_to);
-        printf("%s", main_vector.Char_number);
+        printf("%s\n", main_vector.Char_number);
     }
     else
     {
         long long int result = From_Char_To_Int( &main_vector, base_from);
         From_Int_To_Char( &main_vector, result, base_to);
-        printf( "%s", main_vector.Char_number);
+        printf( "%s\n", main_vector.Char_number);
     }
 
     Destroy_Vector( &main_vector );
