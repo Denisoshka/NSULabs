@@ -47,7 +47,7 @@ void Scan_Pattern( ST_vector * our_vector )
     }
 }
 
-size_t Correct_String( ST_vector * our_vector )
+int Correct_String( ST_vector * our_vector )
 {
     int arr [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     for(int index = 0; index < our_vector->pattern_len ; index++ )
@@ -110,8 +110,8 @@ void Swap_Symbols( ST_vector * our_vector, const int first_necessary_index, cons
 
     for(; index < half_of_tail; index++  )
     {
-        size_t front_index = first_necessary_index + 1 + index;
-        size_t back_index = our_vector->pattern_len - 1 - index;
+        int front_index = first_necessary_index + 1 + index;
+        int back_index = our_vector->pattern_len - 1 - index;
 
         sub_char = our_vector->pattern[ front_index ];
         our_vector->pattern[ front_index ] = our_vector->pattern[ back_index ];
@@ -121,7 +121,7 @@ void Swap_Symbols( ST_vector * our_vector, const int first_necessary_index, cons
 
 void print_permutation( ST_vector * our_vector , int permutation_quantity )
 {
-    for(size_t iteration = 0; iteration < permutation_quantity; iteration++)
+    for(int iteration = 0; iteration < permutation_quantity; iteration++)
     {
         int first_necessary_index = Find_First_Necessary_Index( our_vector );
 
@@ -129,8 +129,8 @@ void print_permutation( ST_vector * our_vector , int permutation_quantity )
         {
             return;
         }
-        else {
-
+        else 
+        {
             int second_necessary_index = Find_Second_Necessary_Index( our_vector, first_necessary_index );
 
             Swap_Symbols( our_vector, first_necessary_index, second_necessary_index );
