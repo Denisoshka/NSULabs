@@ -2,42 +2,91 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 const int K_base_numbers[16] = {0, 1, 2, 3,
                                 4, 5, 6, 7,
                                 8, 9, 10, 11,
                                 12, 13, 14, 15};
-const char K_dot = '.', K_zero = '0', K_nine = '9', K_min_letter = 'a';
+const char K_dot = '.', K_zero = '0', K_nine = '9', K_min_letter = 'a', K_end_of_string = '\0';
+const int K_max_input_number_len = 13;
+const int K_max_after_dot_numbers = 12;
+const int K_true = 1, K_false = 0;
+typedef struct ST_vector
+{
+    char * Char_number;
+    int number_len;
+    int dot_index;
+    int fractional;
+}ST_vector;
+
+ST_vector Make_Vector(void)
+{
+    ST_vector our_vector = {
+            .Char_number = NULL,
+            .dot_index = 0,
+            .number_len = 0,
+            .fractional = 0,
+    };
+    return our_vector;
+}
 
 const char * K_all_symbols = "0123456789abcdef";
 
-int Valid_Bases(const int K_base1, const int K_base2);
-int Valid_Char(const char * K_operand, const int K_base_from, const size_t operand_len);
-size_t Dot_Index(const char * K_where_search);
-int Fractional( const char * K_operand );
-int necessary_number(const char symbol);
-
-double To_Decimal( const int K_number_base1, const int K_is_fractional, const size_t K_operand_len,  const char * K_operand );
-
-char * From_Decimal( double decimal, const int BASE_TO, const int K_is_fractional );
-char * Lower_Char(const char * K_operand, const size_t K_operand_len);
-
-
-
-char * Lower_Char(const char * K_operand, const size_t K_operand_len)
+void Scan_Number( ST_vector * our_vector)
 {
-    char * new_char = calloc( K_operand_len, sizeof(char) );
-
-    for ( size_t index = 0; index < K_operand_len; index++)
+    char symbol;
+    if (fread(&symbol, sizeof(char), 1, stdin) != 1)
     {
-        new_char[ index ] = (char)tolower( K_operand[ index ] );
+//        здесь должен быть код для того что бы что то сделать с возвращаемым значением
     }
-    return new_char;
+
+    if ( symbol == '\n' ) //  как я понял после scanf указатель на чтение строки застывает на \n и этот костыль избавляет нас от этой проблемы
+    {
+        for (int index = 0; index < K_max_input_number_len; index++) {
+
+            if(fread(&symbol, sizeof(char), 1, stdin) != 1)
+            {
+//              здесь должен быть код для того что бы что то сделать с возвращаемым значением
+            }
+            if (symbol != '\n') {
+                our_vector->number_len++;
+                our_vector->Char_number = realloc(our_vector->Char_number,sizeof(char) * ((our_vector->number_len) + 1));
+                our_vector->Char_number[index] = symbol;
+            } else {
+                our_vector->Char_number[index] = K_end_of_string;
+                return;
+            }
+        }
+    }
 }
 
+void Destroy_Vector( ST_vector * our_vector )
+{
+    free( our_vector->Char_number);
+}
 
-int necessary_number(const char symbol){
+void Lower_Char(ST_vector * our_vector)
+{
+    for ( int index = 0; index < ( our_vector->number_len ) ; index++)
+    {
+        our_vector -> Char_number[ index ] = (char)tolower( our_vector->Char_number[ index ] );
+    }
+}
+
+void Dot_Index( ST_vector * our_vector )
+{
+    int index=0;
+    for( ; index < our_vector->number_len; index++ )
+    {
+        if ( our_vector->Char_number[index] == K_dot ){
+            our_vector->dot_index = index;
+            return;
+        }
+    }
+    our_vector->dot_index = index;
+}
+
+int Necessary_Number(const char symbol){
     int in_range_2_9 = (K_zero <= symbol && symbol <= K_nine );
 
     if ( in_range_2_9 )
@@ -49,8 +98,7 @@ int necessary_number(const char symbol){
     }
 }
 
-
-int Symbol_less_base(const char symbol, const int K_base_from)
+int Symbol_Less_Base(const char symbol, const int K_base_from)
 {
     int symbol_in_range_2_base_from_9 = ( ( K_zero <= symbol ) && ( symbol < K_zero + K_base_from ) );
     int symbol_in_range_a_base_from_f = ( ( K_min_letter <= symbol ) && ( symbol < K_min_letter + K_base_from - 10 ) );
@@ -59,150 +107,172 @@ int Symbol_less_base(const char symbol, const int K_base_from)
     return condition;
 }
 
-//в функции мы проверяемм на то что в записи числа нет цифр больше базы, посторонние элементы проверяем при переводе числа
-int Valid_Char(const char * K_operand, const int K_base_from, const size_t K_operand_len)
+size_t Valid_Char(ST_vector * our_vector, const int K_base_from)
 {
-    size_t dot_index = K_operand_len;
 
-    if ( strrchr(K_operand, K_dot ) != NULL )
+    if ( ( our_vector->dot_index == 0 ) || ( our_vector -> dot_index == our_vector -> number_len - 1 ) )
     {
-        dot_index = Dot_Index(K_operand);
-        if ( ( dot_index == 0 ) || ( dot_index == K_operand_len - 1 ) )
+        return K_false;
+    }
+
+    for( int index = 0 ; index < our_vector -> dot_index; index++ )
+    {
+        if ( !Symbol_Less_Base( our_vector -> Char_number[ index ] , K_base_from ) )
         {
-            return 0;
+            return K_false;
         }
     }
-    for( size_t index = 0 ; index < dot_index; index++ )
+    for( int index = our_vector -> dot_index + 1 ; index < our_vector -> number_len; index++ )
     {
-        if ( !Symbol_less_base( K_operand[ index ] , K_base_from ) )
+        if ( !Symbol_Less_Base( our_vector -> Char_number[ index ], K_base_from ) )
         {
-            return 0;
+            return K_false;
         }
     }
-    for( size_t index = dot_index + 1 ; index < K_operand_len; index++ )
-    {
-        if ( !Symbol_less_base( K_operand[ index ], K_base_from ) )
-        {
-            return 0;
-        }
-    }
-    return 1;
+    return K_true;
 }
 
-int Valid_Bases(const int K_base1, const int K_base2)
+size_t Valid_Bases(const int K_base1, const int K_base2)
 {
     return ( 2 <= K_base1 && K_base1 <= 16 && 2 <= K_base2 && K_base2<= 16 );
 }
-
-size_t Dot_Index(const char * K_where_search)
+void Fractional( ST_vector * our_vector )
 {
-    size_t ind=0;
-    for( ; K_where_search[ ind ] != K_dot ; ind++ )
-        ;
-    return ind;
-}
-int Fractional( const char *K_operand )
-{
-    if (strrchr(K_operand, K_dot) != NULL)
-    {
-        for ( size_t ind = Dot_Index( K_operand )+1 ; K_operand[ ind ] != '\0'; ind++)
+        for ( int index = our_vector -> dot_index + 1 ; index < our_vector->number_len; index++)
         {
-            if ( K_operand[ ind ] != K_zero)
+            if ( our_vector-> Char_number[ index ] != K_zero)
             {
-                return 1;
+                our_vector->fractional = K_true;
+                return;
             }
         }
-    }
-    return 0;
+
+    our_vector->fractional = K_false;
 }
 
-double To_Decimal( const int K_number_base1, const int K_is_fractional, const size_t K_operand_len,  const char * K_operand )
+void Prepare_String( ST_vector * our_vector)
+{
+    Lower_Char( our_vector);
+    Dot_Index( our_vector );
+    Fractional( our_vector);
+}
+
+
+double From_Char_To_Double( ST_vector * our_vector, const int K_number_base1)
 {
     double result = 0;
-    const int K_dot_index = ( strrchr(K_operand, K_dot ) != NULL ) ?  (int) Dot_Index(K_operand) : (int) K_operand_len;
+    int additional_index;
 
-    for ( size_t index = 0; index < K_dot_index; index++ )
+    for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
     {
-        result += necessary_number( K_operand[index] ) * pow(K_number_base1, ( K_dot_index - 1 - index ) );
+        additional_index = our_vector -> dot_index - 1 - front_index;
+        result += Necessary_Number( our_vector->Char_number[front_index] ) * pow(K_number_base1,  (int)additional_index ) ;
     }
-    if ( K_is_fractional )
+
+    for ( int index = our_vector->dot_index + 1; index < our_vector->number_len; index++ )
     {
-        for ( size_t index = K_dot_index + 1; index < K_operand_len; index++ )
-        {
-            result += necessary_number( K_operand[index] ) * pow(K_number_base1, ( K_dot_index - index ) );
-        }
+        additional_index = our_vector->dot_index - index;
+        result += Necessary_Number( our_vector->Char_number[index] ) * pow(K_number_base1, additional_index );
     }
     return result;
 }
 
-char * From_Decimal( double decimal, const int BASE_TO, const int K_is_fractional )
+void From_Double_To_Char( ST_vector * our_vector, double decimal,  const int K_base_to )
 {
-    const int AFTER_POINT = 12;
-    int int_size = 0;
-    long long int int_decimal = ( long long int )decimal;
-    double fractional_part = decimal - ( double )int_decimal;
+    int result_non_fractional_part_len = 0;
+    long int int_part_of_decimal = ( long int )decimal;
+    double fractional_part_of_decimal = decimal - ( double )int_part_of_decimal;
 
     do{
-        int_size++;
-    }while( ( int )int_decimal >= pow(BASE_TO, int_size ) );
+        result_non_fractional_part_len++;
+    }while( int_part_of_decimal >= (long int)pow(K_base_to, result_non_fractional_part_len ) );
 
-    const int decimal_size = ( K_is_fractional ) ? int_size + 1 + AFTER_POINT : int_size;
-    char * result = calloc(decimal_size, sizeof( char ) );
+    int result_len = result_non_fractional_part_len + 1 + K_max_after_dot_numbers;
+    our_vector->Char_number = realloc( our_vector->Char_number, (result_len + 1) * sizeof(char));
 
-    for( int ind = int_size-1; ind >= 0; ind-- )
+    for( int back_index = result_non_fractional_part_len - 1; back_index >= 0; back_index-- ) {
+        our_vector->Char_number[back_index] = K_all_symbols[int_part_of_decimal % K_base_to];
+        int_part_of_decimal /= K_base_to;
+    }
+
+    our_vector->Char_number[result_non_fractional_part_len] = K_dot;
+
+    for ( int index = result_non_fractional_part_len + 1; index < result_len; index++ )
     {
-        result[ ind ] = K_all_symbols[ int_decimal % BASE_TO ];
-        int_decimal /= BASE_TO;
-    }
-    if ( K_is_fractional ) {
-
-        result[ int_size ] = K_dot;
-
-        for ( int index = int_size + 1; index < decimal_size; index++ )
-        {
-            fractional_part *= BASE_TO;
-            result[ index ] = K_all_symbols[ (int) fractional_part ];
-            fractional_part -= (int) fractional_part;
-        }
+        fractional_part_of_decimal *= K_base_to;
+        our_vector->Char_number[ index ] = K_all_symbols[ (int)fractional_part_of_decimal ];
+        fractional_part_of_decimal -= (int)fractional_part_of_decimal;
     }
 
+    our_vector->Char_number[ result_len ] = K_end_of_string;
+}
+
+long long int From_Char_To_Int( ST_vector * our_vector, const int K_number_base_from)
+{
+    long long int result = 0;
+    
+    for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
+    {
+        int back_index = our_vector->dot_index - 1 - front_index;
+        /*back_index - отвечает за то в какую степень будем возводить число
+          front_index - отвечает за расположение числа в строке */
+        result += (long long int)Necessary_Number( our_vector->Char_number[ front_index ] ) * (long long int)pow(K_number_base_from, back_index ) ;
+    }
     return result;
 }
+
+void From_Int_To_Char( ST_vector * our_vector, long long int int_number, const long long int K_base_to )
+{
+    int result_len = 0;
+
+    do{
+        result_len++;
+    }while( int_number >= (long long int)pow((double)K_base_to, (double)result_len ) );
+
+    our_vector->Char_number = realloc( our_vector->Char_number, ( result_len + 1 ) * sizeof(char) );
+
+    for(int back_index = result_len - 1; back_index >= 0 ; back_index-- )
+    {
+        our_vector->Char_number[ back_index ] = K_all_symbols[ int_number % K_base_to ];
+        int_number /= K_base_to;
+    }
+    our_vector->Char_number[ result_len ] = K_end_of_string;
+}
+
 
 int main( void )
 {
-    int base_from, base_to, count_scan_systems, count_scan_number;
-    double decimal_result;
-    char main_operand[ 14 ];
+    int base_from, base_to, count_of_scan_systems;
+    count_of_scan_systems = scanf("%d%d", &base_from, &base_to);
 
-    count_scan_systems = scanf("%d%d", &base_from, &base_to );
-    count_scan_number = scanf("%13s", main_operand );
+    ST_vector main_vector = Make_Vector();
+    Scan_Number( &main_vector );
 
-    if ( ( count_scan_systems != 2 ) || ( count_scan_number != 1 ))
+    Prepare_String( &main_vector);
+
+    if (main_vector.Char_number[0] == K_end_of_string ||
+    !Valid_Bases(base_from, base_to) ||
+    !Valid_Char(&main_vector, base_from) ||
+    (count_of_scan_systems != 2)
+    )
     {
-        printf("bad input\n" );
+        printf("bad input\n");
+        Destroy_Vector( &main_vector);
         return 0;
     }
 
-    const size_t K_main_operand_len = strlen( main_operand );
-    const int K_is_fractional = Fractional( main_operand );
-    char * lower_main_operand = Lower_Char( main_operand, K_main_operand_len );
-
-//блок с проверкой на соответствие баз и соответствия чисел числа базе
-    if ( !Valid_Bases(base_from, base_to ) || !Valid_Char(lower_main_operand, base_from, K_main_operand_len) )
+    if ( main_vector.fractional )
     {
-        printf("bad input\n" );
-        return 0;
+        double result = From_Char_To_Double( &main_vector, base_from );
+        From_Double_To_Char( &main_vector, result, base_to);
+        printf("%s\n", main_vector.Char_number);
     }
-//блок проверок закончен
-
-    char *char_result;
-// здесь будем делать проверку на дробную часть
-    decimal_result = To_Decimal( base_from, K_is_fractional, K_main_operand_len, lower_main_operand );
-    char_result = From_Decimal( decimal_result, base_to, K_is_fractional );
-
-    printf("%s\n", char_result );
-    free(lower_main_operand);
-    free( char_result );
+    else
+    {
+        long long int result = From_Char_To_Int( &main_vector, base_from);
+        From_Int_To_Char( &main_vector, result, base_to);
+        printf( "%s\n", main_vector.Char_number);
+    }
+    Destroy_Vector( &main_vector );
     return 0;
 }
