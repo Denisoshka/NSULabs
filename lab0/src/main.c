@@ -88,9 +88,9 @@ void get_dot_index( ST_vector * our_vector )
     our_vector->dot_index = index;
 }
 
-int return_necessary_number(const char symbol)
+int return_necessary_number( const char symbol )
 {
-    int in_range_2_9 = ('0' <= symbol) && (symbol <= '9' );
+    int in_range_2_9 = ( '0' <= symbol) && (symbol <= '9' );
 
     if ( in_range_2_9 )
     {
@@ -101,7 +101,7 @@ int return_necessary_number(const char symbol)
     }
 }
 
-int is_symbol_less_base(const char symbol, const int K_base_from)
+int is_symbol_less_base( const char symbol, const int K_base_from )
 {
     int symbol_in_range_2_base_from_9 = ( ( '0' <= symbol ) && ( symbol < '0' + K_base_from ) );
     int symbol_in_range_a_base_from_f = ( ( 'a' <= symbol ) && ( symbol < 'a' + K_base_from - 10 ) );
@@ -110,9 +110,9 @@ int is_symbol_less_base(const char symbol, const int K_base_from)
     return condition;
 }
 
-size_t is_valid_char(ST_vector * our_vector, const int K_base_from)
+size_t is_valid_char( const ST_vector * our_vector, const int K_base_from )
 {
-    if ( ( our_vector->dot_index == 0 ) || ( our_vector -> dot_index == our_vector -> number_len - 1 ) )
+    if ( ( our_vector -> dot_index == 0 ) || ( our_vector -> dot_index == our_vector -> number_len - 1 ) )
     {
         return 0;
     }
@@ -136,7 +136,7 @@ size_t is_valid_char(ST_vector * our_vector, const int K_base_from)
     return 1;
 }
 
-int is_valid_bases(const int K_base1, const int K_base2)
+int is_valid_bases( const int K_base1, const int K_base2 )
 {
     return ( 2 <= K_base1 && K_base1 <= 16 && 2 <= K_base2 && K_base2<= 16 );
 }
