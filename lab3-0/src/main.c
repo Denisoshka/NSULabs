@@ -88,7 +88,7 @@ void heap_sort( ARRAY_vector * vector )
     }
 }
 
-void print_array(ARRAY_vector * vector)
+void print_array(const ARRAY_vector * vector)
 {
     FILE * thread_out = fopen( "out.txt", "w");
 //    FILE * thread_out = fopen( "C:\\Users\\dinis\\CLionProjects\\lab3-0\\out.txt", "w");
@@ -107,7 +107,7 @@ void destroy_vector(ARRAY_vector * vector)
     free( vector->array);
 }
 
-int main()
+int main(void)
 {
     ARRAY_vector vector = create_array_vector();
     prepare_vector( &vector);
