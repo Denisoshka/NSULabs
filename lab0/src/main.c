@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 const int K_base_numbers[16] = {0, 1, 2, 3,
                                 4, 5, 6, 7,
@@ -31,35 +32,27 @@ ST_vector make_vector(void)
 
 const char * K_all_symbols = "0123456789abcdef";
 
-
-void scan_number(ST_vector * our_vector)
+void other_error( int line)
 {
-    char symbol;
-    if (fread(&symbol, sizeof(char), 1, stdin) != 1)
+    printf( "line: %d", line);
+    exit( EXIT_FAILURE);
+}
+
+void scan_number(ST_vector * vector)
+{
+    vector -> char_number = malloc( (K_max_input_number_len + 1) * sizeof(char) );
+
+    if (vector -> char_number == NULL)
     {
-        printf("__ScanNumber__");
-        exit(EXIT_FAILURE);
+        other_error( __LINE__);
     }
 
-    if ( symbol == '\n' ) //  как я понял после scanf указатель на чтение строки застывает на \n и этот костыль избавляет нас от этой проблемы
+    if( scanf( "%13s", vector->char_number) != 1 )
     {
-        for (int index = 0; index < K_max_input_number_len; index++) {
-
-            if(fread(&symbol, sizeof(char), 1, stdin) != 1)
-            {
-                printf("__ScanNumber__");
-                exit( EXIT_FAILURE );
-            }
-            if (symbol != '\n') {
-                our_vector->number_len++;
-                our_vector->char_number = realloc(our_vector->char_number,sizeof(char) * ((our_vector->number_len) + 1));
-                our_vector->char_number[index] = symbol;
-            } else {
-                our_vector->char_number[index] = '\0';
-                return;
-            }
-        }
+        other_error(__LINE__);
     }
+
+    vector -> number_len = strlen( vector->char_number);
 }
 
 void destroy_vector( ST_vector * our_vector )
@@ -142,14 +135,14 @@ int is_valid_bases( const int K_base1, const int K_base2 )
 }
 void is_fractional( ST_vector * our_vector )
 {
-        for ( int index = our_vector -> dot_index + 1 ; index < our_vector->number_len; index++)
+    for ( int index = our_vector -> dot_index + 1 ; index < our_vector->number_len; index++)
+    {
+        if ( our_vector-> char_number[ index ] != '0')
         {
-            if ( our_vector-> char_number[ index ] != '0')
-            {
-                our_vector->fractional = 1;
-                return;
-            }
+            our_vector->fractional = 1;
+            return;
         }
+    }
 
     our_vector->fractional = 0;
 }
@@ -262,12 +255,6 @@ void print_converted_number(ST_vector *our_vector, const int K_base_from, const 
     printf("%s\n", our_vector->char_number );
 }
 
-void finish_with_exit_success(ST_vector *our_vector )
-{
-    destroy_vector( our_vector );
-    exit( EXIT_SUCCESS );
-}
-
 void exit_with_bad_input( ST_vector *our_vector )
 {
     printf("bad input\n" );
@@ -276,16 +263,25 @@ void exit_with_bad_input( ST_vector *our_vector )
 }
 
 void are_all_conditions_complied( ST_vector *our_vector, const int K_count_of_scan,
-                              const int K_base_to, const int K_base_from)
+                                  const int K_base_to, const int K_base_from)
 {
     if ( our_vector->char_number[0] == '\0' )
+    {
         exit_with_bad_input( our_vector );
+    }
+
     if ( !is_valid_bases(K_base_from, K_base_to) )
-        exit_with_bad_input( our_vector );
+    {
+        exit_with_bad_input(our_vector);
+    }
     if ( !is_valid_char( our_vector, K_base_from) )
-        exit_with_bad_input( our_vector );
+    {
+        exit_with_bad_input(our_vector);
+    }
     if ( K_count_of_scan != 2)
-        exit_with_bad_input( our_vector );
+    {
+        exit_with_bad_input(our_vector);
+    }
 }
 
 int main(void )
@@ -302,5 +298,7 @@ int main(void )
 
     print_converted_number( &main_vector, base_from, base_to );
 
-    finish_with_exit_success( &main_vector);
+    destroy_vector( &main_vector);
+
+    return 0;
 }
