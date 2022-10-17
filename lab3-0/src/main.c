@@ -15,7 +15,7 @@ ARRAY_vector create_array_vector(void)
     return vector;
 }
 
-void other_error(const char * func, int line)
+void other_error( const char * func, int line)
 {
     printf( "func: %s   line: %d", func, line);
     exit( EXIT_FAILURE);
@@ -23,16 +23,16 @@ void other_error(const char * func, int line)
 
 void prepare_vector( ARRAY_vector * vector)
 {
-//    FILE * thread_in = fopen( "in.txt", "r");
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
+    FILE * thread_in = fopen( "in.txt", "r");
+//    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
     if (thread_in == NULL)
     {
-    other_error((char *)__FUNCTION__ , __LINE__);
+    other_error( __FUNCTION__ , __LINE__);
     }
 
     if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
     {
-        other_error((char *)__FUNCTION__ , __LINE__);
+        other_error( __FUNCTION__ , __LINE__);
     }
 
     vector -> array = malloc( vector -> array_len * sizeof(int));
