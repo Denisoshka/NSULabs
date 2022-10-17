@@ -27,7 +27,7 @@ void prepare_vector( ARRAY_vector * vector)
 //    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
     if (thread_in == NULL)
     {
-    other_error( __LINE__);
+        other_error( __LINE__);
     }
 
     if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
