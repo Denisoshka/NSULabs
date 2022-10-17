@@ -21,36 +21,29 @@ void prepare_vector( ARRAY_vector * vector)
 //    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
     if (thread_in == NULL)
     {
-        exit(43);
+        exit(24);
     }
 
     if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
     {
-        exit(48);
+        exit(29);
     }
 
     vector -> array = malloc( vector -> array_len * sizeof(int));
     if (vector->array == NULL)
     {
-        exit( 54 );
+        exit( 35 );
     }
 
     for( int index = 0; index < vector->array_len; index++)
     {
         if ( fscanf(thread_in, "%d", &vector->array[index] ) != 1 )
         {
-            exit(61);
+            exit(42);
         }
     }
     fclose(thread_in);
 }
-
-/*void swap_elements( int * first_num, int * second_num )
-{
-    int sub_element = *second_num;
-    *second_num = *first_num;
-    *first_num = sub_element;
-}*/
 
 void make_max_heap( ARRAY_vector * vector, int array_len, int root_index )
 {
@@ -97,7 +90,7 @@ void print_array(ARRAY_vector * vector)
     {
         if (fprintf(thread_out, "%d ", vector->array[index]) == -1)
         {
-            exit(118);
+            exit(93);
         }
     }
     fclose( thread_out);
@@ -107,7 +100,6 @@ void destroy_vector(ARRAY_vector * vector)
 {
     free( vector->array);
 }
-
 
 int main()
 {
