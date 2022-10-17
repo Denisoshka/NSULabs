@@ -45,7 +45,7 @@ void prepare_vector( ARRAY_vector * vector)
     {
         if ( fscanf(thread_in, "%d", &vector->array[index] ) != 1 )
         {
-            other_error((char *)__FUNCTION__ , __LINE__);
+            other_error(__FUNCTION__ , __LINE__);
         }
     }
     fclose(thread_in);
