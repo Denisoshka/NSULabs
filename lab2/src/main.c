@@ -23,8 +23,8 @@ void other_error( const char * func, int line)
 
 void prepare_vector( ARRAY_vector * vector)
 {
-//    FILE * thread_in = fopen( "in.txt", "r");
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
+    FILE * thread_in = fopen( "in.txt", "r");
+//    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
     if (thread_in == NULL)
     {
     other_error( __FUNCTION__ , __LINE__);
