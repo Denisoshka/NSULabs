@@ -15,31 +15,37 @@ ARRAY_vector create_array_vector(void)
     return vector;
 }
 
+void other_error(const char * func, int line)
+{
+    printf( "func: %s   line: %d", func, line);
+    exit( EXIT_FAILURE);
+}
+
 void prepare_vector( ARRAY_vector * vector)
 {
-    FILE * thread_in = fopen( "in.txt", "r");
-//    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
+//    FILE * thread_in = fopen( "in.txt", "r");
+    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
     if (thread_in == NULL)
     {
-        exit(24);
+    other_error((char *)__FUNCTION__ , __LINE__);
     }
 
     if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
     {
-        exit(29);
+        other_error((char *)__FUNCTION__ , __LINE__);
     }
 
     vector -> array = malloc( vector -> array_len * sizeof(int));
     if (vector->array == NULL)
     {
-        exit( 35 );
+        other_error(__FUNCTION__ , __LINE__);
     }
 
     for( int index = 0; index < vector->array_len; index++)
     {
         if ( fscanf(thread_in, "%d", &vector->array[index] ) != 1 )
         {
-            exit(42);
+            other_error((char *)__FUNCTION__ , __LINE__);
         }
     }
     fclose(thread_in);
@@ -66,7 +72,7 @@ void make_max_heap( ARRAY_vector * vector, int array_len, int root_index )
     }
 }
 
-void heap_sort( ARRAY_vector * vector)
+void heap_sort( ARRAY_vector * vector )
 {
     int array_len = vector -> array_len;
     for( int index = array_len / 2 + 1; index >= 0; index--)
@@ -90,7 +96,7 @@ void print_array(ARRAY_vector * vector)
     {
         if (fprintf(thread_out, "%d ", vector->array[index]) == -1)
         {
-            exit(93);
+            other_error(__FUNCTION__ , __LINE__);
         }
     }
     fclose( thread_out);
@@ -107,7 +113,7 @@ int main()
     prepare_vector( &vector);
     heap_sort( &vector);
     print_array( &vector);
-
     destroy_vector( &vector);
+
     return EXIT_SUCCESS;
 }
