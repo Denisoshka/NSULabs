@@ -68,7 +68,7 @@ void make_lower_char(ST_vector * our_vector)
     }
 }
 
-void get_dot_index( const ST_vector * our_vector )
+void get_dot_index( ST_vector * our_vector )
 {
     int index=0;
     for( ; index < our_vector->number_len; index++ )
@@ -133,7 +133,7 @@ int is_valid_bases( const int K_base1, const int K_base2 )
 {
     return ( 2 <= K_base1 && K_base1 <= 16 && 2 <= K_base2 && K_base2<= 16 );
 }
-void is_fractional( const ST_vector * our_vector )
+void is_fractional( ST_vector * our_vector )
 {
     for ( int index = our_vector -> dot_index + 1 ; index < our_vector->number_len; index++)
     {
