@@ -18,6 +18,12 @@ ST_vector create_vector(void)
     return our_vector;
 }
 
+void other_error(const char * func, int line)
+{
+    printf( "func: %s   line: %d", func, line);
+    exit( EXIT_FAILURE);
+}
+
 void destroy_vector( ST_vector * our_vector)
 {
     free(our_vector->pattern);
@@ -29,18 +35,21 @@ void scan_pattern( ST_vector * our_vector )
     for( int index = 0 ; ; index++)
     {
         if ( 1 != fread(&symbol, sizeof(char), 1, stdin ) ){
-            printf("__Scan_pattern__fread\n" );
-            exit(EXIT_FAILURE);
+            other_error((char *)__FUNCTION__ , __LINE__);
         }
         if ( symbol != '\n' )
         {
             our_vector->pattern_len++;
             our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len);
+            if (our_vector -> pattern == NULL)
+                other_error((char *)__FUNCTION__ , __LINE__);
             our_vector->pattern[index] = symbol;
         }
         else
         {
             our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len+1 );
+            if (our_vector -> pattern == NULL)
+                other_error((char *)__FUNCTION__ , __LINE__);
             our_vector->pattern[ index ] = '\0';
             return;
         }
@@ -154,13 +163,6 @@ void are_all_condition_complied(ST_vector * our_vector, int count_of_scan)
         finish_with_bad_input(our_vector );
 }
 
-
-void finish_with_exit_success(ST_vector * our_vector )
-{
-    destroy_vector(our_vector );
-    exit( EXIT_SUCCESS );
-}
-
 int main(void)
 {
     int permutations_quantity, count_of_scan;
@@ -171,6 +173,7 @@ int main(void)
     are_all_condition_complied(&vector, count_of_scan );
 
     print_permutation(&vector, permutations_quantity);
+    destroy_vector(&vector );
 
-    finish_with_exit_success(&vector );
+    return EXIT_SUCCESS;
 }
