@@ -1,119 +1,179 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct ARRAY_vector{
-    int * array;
-    int array_len;
-}ARRAY_vector;
+const int K_loop_not_start = -1;
 
-ARRAY_vector create_array_vector(void)
+typedef struct ST_vector
 {
-    ARRAY_vector vector ={
-            .array = NULL,
-            .array_len = 0,
+    char * pattern;
+    int pattern_len;
+}ST_vector;
+
+ST_vector create_vector(void)
+{
+    ST_vector our_vector = {
+            .pattern = NULL,
+            .pattern_len = 0,
     };
-    return vector;
+    return our_vector;
 }
 
-void other_error( const char * func, int line)
+void other_error( int line)
 {
-    printf( "func: %s   line: %d", func, line);
+    printf( "line: %d", line);
     exit( EXIT_FAILURE);
 }
 
-void prepare_vector( ARRAY_vector * vector)
+void destroy_vector( ST_vector * our_vector)
 {
-    FILE * thread_in = fopen( "in.txt", "r");
-//    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
-    if (thread_in == NULL)
-    {
-    other_error( __FUNCTION__ , __LINE__);
-    }
+    free(our_vector->pattern);
+}
 
-    if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
+void scan_pattern( ST_vector * our_vector )
+{
+    char symbol;
+    for( int index = 0 ; ; index++)
     {
-        other_error( __FUNCTION__ , __LINE__);
-    }
-
-    vector -> array = malloc( vector -> array_len * sizeof(int));
-    if (vector->array == NULL)
-    {
-        other_error(__FUNCTION__ , __LINE__);
-    }
-
-    for( int index = 0; index < vector->array_len; index++)
-    {
-        if ( fscanf(thread_in, "%d", &vector->array[index] ) != 1 )
+        if ( 1 != fread(&symbol, sizeof(char), 1, stdin ) ){
+            other_error( __LINE__);
+        }
+        if ( symbol != '\n' )
         {
-            other_error((char *)__FUNCTION__ , __LINE__);
+            our_vector->pattern_len++;
+            our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len);
+            if (our_vector -> pattern == NULL)
+                other_error(__LINE__);
+            our_vector->pattern[index] = symbol;
+        }
+        else
+        {
+            our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len+1 );
+            if (our_vector -> pattern == NULL)
+                other_error(__LINE__);
+            our_vector->pattern[ index ] = '\0';
+            return;
         }
     }
-    fclose(thread_in);
 }
 
-void make_max_heap( ARRAY_vector * vector, int array_len, int root_index )
+int is_string_correct( const ST_vector * our_vector )
 {
-    int max_element_index = root_index,
-        left_index = 2 * root_index + 1,
-        right_index = 2 * root_index + 2;
-
-    if ( left_index < array_len && vector->array[left_index] > vector->array[max_element_index] )
-        max_element_index = left_index;
-    if (  right_index < array_len && vector->array[right_index] > vector->array[max_element_index])
-        max_element_index = right_index;
-
-    if (max_element_index != root_index)
+    int arr [10] = {0};
+    for(int index = 0; index < our_vector->pattern_len ; index++ )
     {
-        int sub_element = vector->array[max_element_index];
-        vector->array[max_element_index] = vector->array[root_index];
-        vector->array[root_index] = sub_element;
-
-        make_max_heap(vector, array_len, max_element_index);
-    }
-}
-
-void heap_sort( ARRAY_vector * vector )
-{
-    int array_len = vector -> array_len;
-    for( int index = array_len / 2 + 1; index >= 0; index--)
-        make_max_heap( vector, array_len, index);
-
-    for( int index = array_len - 1; index >= 0; index--)
-    {
-        int sub_element = vector->array[0];
-        vector->array[0] = vector->array[index];
-        vector->array[index] = sub_element;
-
-        make_max_heap(vector, index, 0);
-    }
-}
-
-void print_array(ARRAY_vector * vector)
-{
-    FILE * thread_out = fopen( "out.txt", "w");
-//    FILE * thread_out = fopen( "C:\\Users\\dinis\\CLionProjects\\lab3-0\\out.txt", "w");
-    for( int index = 0; index < vector->array_len; index++)
-    {
-        if (fprintf(thread_out, "%d ", vector->array[index]) == -1)
+        if ( '0' <= our_vector->pattern[index ] && our_vector->pattern[ index ] <= '9' )
         {
-            other_error(__FUNCTION__ , __LINE__);
+            arr[our_vector->pattern[index] - '0']++;
+        }
+        else
+        {
+            return 0;
         }
     }
-    fclose( thread_out);
+    for( int index = 0; index < our_vector->pattern_len; index++ )
+    {
+        if( arr[ index ] > 1)
+        {
+            return 0;
+        }
+    }
+    return 1;
 }
 
-void destroy_vector(ARRAY_vector * vector)
+int find_first_necessary_index(const ST_vector * our_vector )
 {
-    free( vector->array);
+    int first_necessary_index = K_loop_not_start;
+
+    for ( int first_index = 0; first_index < our_vector->pattern_len - 1; first_index++ )
+    {
+        if ( our_vector->pattern[ first_index ] < our_vector->pattern[ first_index + 1])
+        {
+            first_necessary_index = first_index;
+        }
+    }
+    return first_necessary_index;
 }
 
-int main()
+int find_second_necessary_index(const ST_vector * our_vector, const int first_necessary_index )
 {
-    ARRAY_vector vector = create_array_vector();
-    prepare_vector( &vector);
-    heap_sort( &vector);
-    print_array( &vector);
-    destroy_vector( &vector);
+    int second_necessary_index = 0;
+    for ( int second_index = first_necessary_index + 1; second_index < our_vector->pattern_len; second_index++)
+    {
+        if ( our_vector->pattern[ first_necessary_index ] < our_vector->pattern[ second_index ])
+        {
+            second_necessary_index = second_index;
+        }
+    }
+    return second_necessary_index;
+}
+
+void swap_symbols(ST_vector * our_vector, const int first_necessary_index, const int second_necessary_index)
+{
+    char sub_char;
+
+    sub_char = our_vector->pattern[ first_necessary_index ];
+    our_vector->pattern[ first_necessary_index ] = our_vector->pattern[ second_necessary_index ];
+    our_vector->pattern[ second_necessary_index ] = sub_char;
+
+    int half_of_tail = ( our_vector->pattern_len - ( first_necessary_index + 1 ) ) / 2;
+
+    for(int index = 0; index < half_of_tail; index++  )
+    {
+        int front_index = first_necessary_index + 1 + index;
+        int back_index = our_vector->pattern_len - 1 - index;
+
+        sub_char = our_vector->pattern[ front_index ];
+        our_vector->pattern[ front_index ] = our_vector->pattern[ back_index ];
+        our_vector->pattern[ back_index ] = sub_char;
+    }
+}
+
+void print_permutation(ST_vector * our_vector , int permutation_quantity )
+{
+    for(int iteration = 0; iteration < permutation_quantity; iteration++)
+    {
+        int first_necessary_index = find_first_necessary_index(our_vector );
+
+        if ( first_necessary_index == K_loop_not_start )
+        {
+            return;
+        }
+        else
+        {
+            int second_necessary_index = find_second_necessary_index(our_vector, first_necessary_index );
+
+            swap_symbols(our_vector, first_necessary_index, second_necessary_index );
+
+            printf("%s\n", our_vector->pattern);
+        }
+    }
+}
+
+void finish_with_bad_input(ST_vector * our_vector )
+{
+    destroy_vector(our_vector );
+    printf("bad input\n" );
+    exit( EXIT_SUCCESS);
+}
+
+
+void are_all_condition_complied(ST_vector * our_vector, int count_of_scan)
+{
+    if ( ( count_of_scan != 1 ) || ( !is_string_correct(our_vector ) ) )
+        finish_with_bad_input(our_vector );
+}
+
+int main(void)
+{
+    int permutations_quantity, count_of_scan;
+    ST_vector vector = create_vector();
+    scan_pattern(&vector );
+    count_of_scan = scanf("%d", &permutations_quantity);
+
+    are_all_condition_complied(&vector, count_of_scan );
+
+    print_permutation(&vector, permutations_quantity);
+    destroy_vector(&vector );
 
     return EXIT_SUCCESS;
 }
