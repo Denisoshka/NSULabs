@@ -34,7 +34,8 @@ void scan_pattern( ST_vector * our_vector )
     char symbol;
     for( int index = 0 ; ; index++)
     {
-        if ( 1 != fread(&symbol, sizeof(char), 1, stdin ) ){
+        if ( 1 != fread(&symbol, sizeof(char), 1, stdin ) )
+        {
             other_error( __LINE__);
         }
         if ( symbol != '\n' )
@@ -42,14 +43,18 @@ void scan_pattern( ST_vector * our_vector )
             our_vector->pattern_len++;
             our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len);
             if (our_vector -> pattern == NULL)
+            {
                 other_error(__LINE__);
+            }
             our_vector->pattern[index] = symbol;
         }
         else
         {
             our_vector->pattern = realloc( our_vector->pattern, our_vector->pattern_len+1 );
             if (our_vector -> pattern == NULL)
+            {
                 other_error(__LINE__);
+            } 
             our_vector->pattern[ index ] = '\0';
             return;
         }
@@ -97,6 +102,7 @@ int find_first_necessary_index(const ST_vector * our_vector )
 int find_second_necessary_index(const ST_vector * our_vector, const int first_necessary_index )
 {
     int second_necessary_index = 0;
+    
     for ( int second_index = first_necessary_index + 1; second_index < our_vector->pattern_len; second_index++)
     {
         if ( our_vector->pattern[ first_necessary_index ] < our_vector->pattern[ second_index ])
