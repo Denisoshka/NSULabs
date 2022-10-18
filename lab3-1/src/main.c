@@ -13,7 +13,8 @@ typedef struct ARRAY_vector
     int array_len;
 }ARRAY_vector;
 
-ARRAY_vector create_vector(void){
+ARRAY_vector create_vector(void)
+{
     ARRAY_vector vector = {
             .array = NULL,
             .array_len = 0,
@@ -87,7 +88,7 @@ void quick_sort(ARRAY_vector * vector, int begin_index, int end_index)
     }
 }
 
-void print_array( ARRAY_vector * vector )
+void print_array( const ARRAY_vector * vector )
 {
     for (int index = 0; index < vector->array_len; index++)
     {
