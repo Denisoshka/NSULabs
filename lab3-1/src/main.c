@@ -1,105 +1,131 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct ST_vector
+void other_error(int line)
+{
+    printf( "line: %d", line);
+    exit( EXIT_FAILURE);
+}
+
+typedef struct ARRAY_vector
 {
     int * array;
     int array_len;
-} ST_vector;
+}ARRAY_vector;
 
-ST_vector create_vector( void )
-{
-    ST_vector vector = {
+ARRAY_vector create_vector(void){
+    ARRAY_vector vector = {
             .array = NULL,
             .array_len = 0,
     };
     return vector;
 }
 
-void exit_with_error(void)
+void destroy_vector( ARRAY_vector * vector )
 {
-    exit( EXIT_FAILURE );
+    free( vector->array );
 }
 
-void destroy_vector( ST_vector * our_vector )
+void prepare_vector( ARRAY_vector * vector)
 {
-    free( our_vector -> array );
-}
+//    FILE * thread_in = fopen( "C:\\Users\\dinis\\CLionProjects\\lab3-1\\in.txt", "r");
+    /*FILE * thread_in = fopen( "in.txt", "r");
 
-void exit_with_success(ST_vector *our_vector)
-{
-    destroy_vector( our_vector );
-    exit( EXIT_SUCCESS);
-}
-
-void fill_vector(ST_vector * our_vector)
-{
-    if ( scanf( "%d", &our_vector->array_len ) != 1 )
+    if( thread_in == NULL)
     {
-        exit_with_error();
+        other_error(__LINE__);
     }
-    our_vector -> array = malloc( sizeof(int) * our_vector->array_len );
-    if ( our_vector->array == NULL)
+*/
+    if ( scanf("%d", &vector->array_len) != 1 )
     {
-        exit_with_error();
+        other_error(__LINE__);
     }
-    for (int index = 0; index < our_vector->array_len; index++)
+
+    vector -> array = malloc( vector->array_len * sizeof( int ) );
+
+    if ( vector->array == NULL)
     {
-        if( scanf( "%d", &our_vector->array[ index ] ) != 1)
+        other_error(__LINE__);
+    }
+
+    for (int index = 0; index < vector->array_len; index++)
+    {
+        if( scanf( "%d", &vector->array[index]) != 1)
         {
-            exit_with_error();
+            other_error(__LINE__);
         }
     }
+
+//    fclose( thread_in);
 }
 
-void quick_sort(ST_vector * our_vector, const int left_edge, const int right_edge ) {
+void swap_elements( int * first_element, int * second_element)
+{
+    int sub_element = * first_element;
+    * first_element = * second_element;
+    * second_element = sub_element;
+}
 
-    int first_index = left_edge, second_index = right_edge;
+void quick_sort(ARRAY_vector * vector, int begin_index, int end_index)
+{
 
-    int patrition_element = our_vector->array[(left_edge + right_edge) / 2];
+    /*int first_index = begin_index;
+    int second_index = end_index;*/
 
-    while (first_index <= second_index)
+    int first_index = begin_index;
+    int second_index = end_index;
+
+    int patrition_element = vector->array[ (begin_index + end_index) / 2 ];
+
+    for ( ; first_index < second_index; )
     {
-        for( ;our_vector->array[first_index] < patrition_element; first_index++);
-        for( ;our_vector->array[second_index] > patrition_element; second_index--);
+        for ( ; ( first_index < vector->array_len ) && vector->array[first_index] < patrition_element; first_index++);
+        for ( ; ( second_index >= 0 ) && patrition_element < vector->array[second_index] ; second_index--);
 
         if (first_index <= second_index)
         {
-            int sub_element = our_vector->array[first_index];
-            our_vector->array[first_index] = our_vector->array[second_index];
-            our_vector->array[second_index] = sub_element;
+            swap_elements( &vector->array[first_index], &vector->array[second_index]);
 
             first_index++;
             second_index--;
         }
     }
-    if (left_edge < second_index)
+    if ( begin_index < second_index )
     {
-        quick_sort(our_vector, left_edge, second_index);
+        quick_sort(vector, begin_index, second_index);
     }
-    if (first_index < right_edge)
+    if ( first_index < end_index )
     {
-        quick_sort(our_vector, first_index, right_edge );
-    }
-
-}
-
-void print_array(ST_vector * our_vector)
-{
-    for (int index = 0; index < our_vector->array_len; index++)
-    {
-        printf( "%d ", our_vector->array[index]);
+        quick_sort(vector, first_index, end_index);
     }
 }
 
-int main(void )
+void print_array( ARRAY_vector * vector )
 {
-    ST_vector vector = create_vector();
-    fill_vector( &vector );
+//    FILE * thread_out = fopen( "out.txt", "r");
+//
+//    if ( thread_out == NULL )
+//    {
+//        other_error( __LINE__ );
+//    }
 
-    quick_sort( &vector, 0, vector.array_len - 1 );
+    for (int index = 0; index < vector->array_len; index++)
+    {
+        printf( "%d ", vector->array[index]);
+    }
 
+//    fclose( thread_out );
+}
+
+int main( )
+{
+    ARRAY_vector vector = create_vector();
+    prepare_vector( &vector);
+    quick_sort( &vector, 0, vector.array_len - 1);
     print_array( &vector);
+    destroy_vector( &vector);
 
-    exit_with_success( &vector );
+    return 0;
 }
+
+
