@@ -117,11 +117,14 @@ void print_array( ARRAY_vector * vector )
 //    fclose( thread_out );
 }
 
-int main( )
+int main( void )
 {
     ARRAY_vector vector = create_vector();
     prepare_vector( &vector);
-    quick_sort( &vector, 0, vector.array_len - 1);
+    if (vector.array_len > 1)
+    {
+        quick_sort( &vector, 0, vector.array_len - 1);
+    }
     print_array( &vector);
     destroy_vector( &vector);
 
