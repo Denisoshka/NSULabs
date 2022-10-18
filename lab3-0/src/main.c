@@ -54,8 +54,8 @@ void prepare_vector( ARRAY_vector * vector)
 void make_max_heap( ARRAY_vector * vector, int array_len, int root_index )
 {
     int max_element_index = root_index,
-        left_index = 2 * root_index + 1,
-        right_index = 2 * root_index + 2;
+            left_index = 2 * root_index + 1,
+            right_index = 2 * root_index + 2;
 
     if ( left_index < array_len && vector->array[left_index] > vector->array[max_element_index] )
         max_element_index = left_index;
@@ -111,7 +111,10 @@ int main(void)
 {
     ARRAY_vector vector = create_array_vector();
     prepare_vector( &vector);
-    heap_sort( &vector);
+    if ( vector.array_len > 1)
+    {
+        heap_sort(&vector);
+    }
     print_array( &vector);
     destroy_vector( &vector);
 
