@@ -28,14 +28,7 @@ void destroy_vector( ARRAY_vector * vector )
 
 void prepare_vector( ARRAY_vector * vector)
 {
-//    FILE * thread_in = fopen( "C:\\Users\\dinis\\CLionProjects\\lab3-1\\in.txt", "r");
-    /*FILE * thread_in = fopen( "in.txt", "r");
 
-    if( thread_in == NULL)
-    {
-        other_error(__LINE__);
-    }
-*/
     if ( scanf("%d", &vector->array_len) != 1 )
     {
         other_error(__LINE__);
@@ -55,8 +48,6 @@ void prepare_vector( ARRAY_vector * vector)
             other_error(__LINE__);
         }
     }
-
-//    fclose( thread_in);
 }
 
 void swap_elements( int * first_element, int * second_element)
@@ -68,10 +59,6 @@ void swap_elements( int * first_element, int * second_element)
 
 void quick_sort(ARRAY_vector * vector, int begin_index, int end_index)
 {
-
-    /*int first_index = begin_index;
-    int second_index = end_index;*/
-
     int first_index = begin_index;
     int second_index = end_index;
 
@@ -102,19 +89,10 @@ void quick_sort(ARRAY_vector * vector, int begin_index, int end_index)
 
 void print_array( ARRAY_vector * vector )
 {
-//    FILE * thread_out = fopen( "out.txt", "r");
-//
-//    if ( thread_out == NULL )
-//    {
-//        other_error( __LINE__ );
-//    }
-
     for (int index = 0; index < vector->array_len; index++)
     {
         printf( "%d ", vector->array[index]);
     }
-
-//    fclose( thread_out );
 }
 
 int main( void )
@@ -130,5 +108,4 @@ int main( void )
 
     return 0;
 }
-
 
