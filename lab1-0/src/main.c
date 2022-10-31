@@ -141,6 +141,12 @@ int main(void)
         print_other_error( __LINE__ );
         return 0;
     }
+    if ( thread_out == NULL)
+    {
+        do_before_exit( &pattern, &text, thread_in, thread_out);
+        print_other_error( __LINE__ );
+        return 0;
+    }
     if ( pattern.array == NULL )
     {
         do_before_exit( &pattern, &text, thread_in, thread_out);
