@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define K_max_pattern_len (int)16
 #define K_max_chunk_len (int)1024
