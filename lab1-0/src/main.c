@@ -135,7 +135,7 @@ int main(void)
     vector pattern = create_vector( K_max_pattern_len );
     vector text = create_vector( K_max_chunk_len );
 
-    if ( thread_in == NULL)
+    /*if ( thread_in == NULL)
     {
         do_before_exit( &pattern, &text, thread_in, thread_out);
         print_other_error( __LINE__ );
@@ -146,7 +146,7 @@ int main(void)
         do_before_exit( &pattern, &text, thread_in, thread_out);
         print_other_error( __LINE__ );
         return 0;
-    }
+    }*/
     if ( pattern.array == NULL )
     {
         do_before_exit( &pattern, &text, thread_in, thread_out);
