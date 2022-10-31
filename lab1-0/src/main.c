@@ -32,7 +32,7 @@ void destroy_vector( vector * blank )
     blank->array = NULL;
 }
 
-void scan_pattern( vector * pattern, int * flag, FILE * thread_in )
+void scan_pattern( vector * pattern, FILE * thread_in )
 {
     int index = 0;
     unsigned char symbol;
@@ -74,7 +74,7 @@ void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
     text->sub_index = pattern->array_len - 1;
 }
 
-int search_substring(vector * text, const vector * pattern, int * total_index, const int * shift_table, FILE * thread_out)
+void search_substring(vector * text, const vector * pattern, int * total_index, const int * shift_table, FILE * thread_out)
 {
     for( int pattern_work_index = pattern->array_len - 1, text_work_index = text -> sub_index; pattern_work_index>=0; pattern_work_index--, text_work_index--)
     {
@@ -82,11 +82,11 @@ int search_substring(vector * text, const vector * pattern, int * total_index, c
         if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
         {
             *total_index += shift_table[ text->array[ text->sub_index ] ];
-            return shift_table[ text->array[ text->sub_index ] ];
+            text->sub_index += shift_table[ text->array[ text->sub_index ] ];
         }
     }
     *total_index += pattern->array_len;
-    return pattern->array_len;
+    text->sub_index += pattern->array_len;
 }
 
 void booyer_moore_algorithm(vector * text, const vector * pattern, const int * shift_table, FILE * thread_in, FILE * thread_out )
@@ -98,7 +98,7 @@ void booyer_moore_algorithm(vector * text, const vector * pattern, const int * s
 
     while ( pattern->array_len <= text->array_len )
     {
-        text->sub_index += search_substring( text, pattern, &total_index, shift_table, thread_out);
+        search_substring( text, pattern, &total_index, shift_table, thread_out);
         if (text->sub_index >= text->array_len )
         {
             text_rewrite(text, pattern, thread_in);
@@ -114,10 +114,9 @@ void do_before_exit( vector * pattern, vector * text, FILE * thread_in, FILE * t
     fclose( thread_out);
 }
 
-int main()
+int main(void)
 {
-    int shift_table [ K_shift_table_size ] = {};
-    int flag = 0;
+    int shift_table [ K_shift_table_size ] = {0};
 
     FILE * thread_in = fopen( "in.txt", "r");
     FILE * thread_out = fopen( "out.txt", "w");
@@ -151,7 +150,7 @@ int main()
         return 0;
     }
 
-    scan_pattern( &pattern, &flag, thread_in);
+    scan_pattern( &pattern, thread_in);
     make_shift_table( &pattern, shift_table );
     booyer_moore_algorithm( &text, &pattern, shift_table, thread_in, thread_out );
 
