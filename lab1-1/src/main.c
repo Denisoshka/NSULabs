@@ -77,9 +77,6 @@ void update_hash_after_rewrite( vector * text, const vector * pattern )
 
 void update_hash( vector * text, const vector * pattern )
 {
-    int flag = 0;
-    if (text->additional>1023 || text->additional<0 || (text->additional - pattern->array_len)>1023 || (text->additional - pattern->array_len)<0 )
-        flag = 1;
     text->hash -= text->array[text->additional - pattern->array_len] % K_hash_base;
     text->hash /= K_hash_base;
     text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
