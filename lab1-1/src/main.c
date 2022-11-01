@@ -113,6 +113,10 @@ void rabin_carp_algorithm(vector * text, const vector * pattern, FILE * thread_i
         if (text->additional >= text->array_len )
         {
             text_rewrite(text, pattern, thread_in);// вот здесь мы выйдем за границы массива
+            if (pattern->array_len > text->array_len)
+            {
+                return;
+            }
         }
         update_hash( text, pattern );
     }
