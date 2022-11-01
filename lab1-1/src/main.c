@@ -180,9 +180,7 @@ int main(void)
     }
 
     scan_pattern( &pattern, thread_in);
-
     pattern.additional = get_hash( &pattern, &pattern);
-
     rabin_carp_algorithm( &text, &pattern, thread_in, thread_out);
 
     do_before_exit( &pattern, &text, thread_in, thread_out);
