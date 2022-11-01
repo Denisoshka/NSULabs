@@ -5,7 +5,7 @@
 #define K_max_chunk_len (int)1024
 #define K_hash_base (int)3
 
-void print_other_error( int line )
+void print_other_error( const int line )
 {
     printf( "line %d\n", line);
 }
@@ -17,7 +17,7 @@ typedef struct vector{
     int hash;
 }vector;
 
-vector create_vector( int necessary_array_len )
+vector create_vector( const int necessary_array_len )
 {
     vector blank = {
             .array = malloc( sizeof(unsigned char) * necessary_array_len ),
@@ -65,7 +65,7 @@ void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
         text->array[iteration] = text->array[where_start_rewrite];
     }
     text -> array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, thread_in) + iterations_quantity;
-    text->additional = pattern->array_len - 1;// упускаю iterations// заебись начальник, говнокод устранен
+    text->additional = pattern->array_len - 1;
 }
 
 void update_hash_after_rewrite( vector * text, const vector * pattern )
@@ -82,11 +82,12 @@ void update_hash( vector * text, const vector * pattern )
     text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
 }
 
-void search_substring(vector * text, const vector * pattern, int * total_index, FILE * thread_out)
+void search_substring(vector * text, const vector * pattern, const int * total_index, FILE * thread_out)
 {
-    int print_index = *total_index - pattern->array_len + 1;
+    int print_index = * total_index - pattern->array_len + 1;
+
     for( int pattern_work_index = 0, text_work_index = text->additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
-    {//1023 max index
+    {
         fprintf( thread_out, "%d ", print_index + pattern_work_index);
 
         if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
@@ -120,9 +121,8 @@ void rabin_carp_algorithm(vector * text, const vector * pattern, FILE * thread_i
 
         if ( text->additional >= text->array_len )
         {
-            text_rewrite(text, pattern, thread_in);// вот здесь мы выйдем за границы массива//нихуя мы не выйдем, тут проблема в другом
-            //ща все будет начальник
-            update_hash_after_rewrite( text, pattern);
+            text_rewrite(text, pattern, thread_in);
+            update_hash_after_rewrite( text, pattern );
         }
         else
         {
