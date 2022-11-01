@@ -143,29 +143,10 @@ int main(void)
 {
     FILE * thread_in = fopen( "in.txt", "r");
     FILE * thread_out = fopen( "out.txt", "w");
-/*
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\CLionProjects\\lab1-1\\in.txt", "r");
-    FILE * thread_out = fopen( "C:\\Users\\dinis\\CLionProjects\\lab1-1\\out.txt", "w");
-*//*
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab1-1\\test\\in.txt", "r");
-    FILE * thread_out = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab1-1\\test\\out.txt", "w");
-*/
+
     vector pattern = create_vector( K_max_pattern_len );
     vector text = create_vector( K_max_chunk_len );
-/*
-    if ( thread_in == NULL)
-    {
-        do_before_exit( &pattern, &text, thread_in, thread_out);
-        print_other_error( __LINE__ );
-        return 0;
-    }
-    if ( thread_out == NULL)
-    {
-        do_before_exit( &pattern, &text, thread_in, thread_out);
-        print_other_error( __LINE__ );
-        return 0;
-    }
-*/
+
     if ( pattern.array == NULL )
     {
         do_before_exit( &pattern, &text, thread_in, thread_out);
