@@ -60,26 +60,36 @@ void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
     int where_start_rewrite = text->additional - pattern->array_len + 1;
     int iterations_quantity = pattern->array_len - text->additional + text->array_len - 1;
 
-    for ( int iteration = 0; iteration < iterations_quantity ; iteration++)
+    for ( int iteration = 0; iteration < iterations_quantity ; iteration++, where_start_rewrite++)
     {
-        text->array[iteration] = text->array[where_start_rewrite + iteration];
+        text->array[iteration] = text->array[where_start_rewrite];
     }
     text -> array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, thread_in) + iterations_quantity;
     text->additional = pattern->array_len - 1;// упускаю iterations// заебись начальник, говнокод устранен
 }
 
+void update_hash_after_rewrite( vector * text, const vector * pattern )
+{
+    text->hash -= text->array[0] % K_hash_base;
+    text->hash /= K_hash_base;
+    text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
+}
+
 void update_hash( vector * text, const vector * pattern )
 {
+    int flag = 0;
+    if (text->additional>1023 || text->additional<0 || (text->additional - pattern->array_len)>1023 || (text->additional - pattern->array_len)<0 )
+        flag = 1;
     text->hash -= text->array[text->additional - pattern->array_len] % K_hash_base;
     text->hash /= K_hash_base;
-    text->hash += (text->array[text->additional ] % K_hash_base) * pattern->additional;
+    text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
 }
 
 void search_substring(vector * text, const vector * pattern, int * total_index, FILE * thread_out)
 {
     int print_index = *total_index - pattern->array_len + 1;
-    for( int pattern_work_index = 0, text_work_index = text -> additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
-    {
+    for( int pattern_work_index = 0, text_work_index = text->additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
+    {//1023 max index
         fprintf( thread_out, "%d ", print_index + pattern_work_index);
 
         if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
@@ -97,30 +107,30 @@ void rabin_carp_algorithm(vector * text, const vector * pattern, FILE * thread_i
 
     fprintf( thread_out, "%d ", pattern->hash);
 
-    if ( pattern->array_len <= text->array_len )
+    if (pattern->array_len <= text->array_len)
     {
         get_hash( text, pattern);
     }
-    while ( pattern->array_len <= text->array_len )
+    while (pattern->array_len <= text->array_len)
     {
         if (pattern->hash == text->hash)
         {
             search_substring(text, pattern, &total_index,  thread_out);
         }
+
         total_index++;
         text->additional++;
 
-        if (text->additional >= text->array_len )
+        if ( text->additional >= text->array_len )
         {
-            text_rewrite(text, pattern, thread_in);// вот здесь мы выйдем за границы массива
+            text_rewrite(text, pattern, thread_in);// вот здесь мы выйдем за границы массива//нихуя мы не выйдем, тут проблема в другом
+            //ща все будет начальник
+            update_hash_after_rewrite( text, pattern);
         }
-        
-        if (pattern->array_len > text->array_len)
+        else
         {
-            return;
+            update_hash( text, pattern );
         }
-        
-        update_hash( text, pattern );
     }
 }
 
