@@ -71,8 +71,8 @@ void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
     {
         text->array[iteration] = text->array[where_start_rewrite + iteration];
     }
-    text -> array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, thread_in);
-    text->sub_index = pattern->array_len - 1;
+    text -> array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, thread_in) + iterations_quantity;
+    text->sub_index = pattern->array_len - 1;// упускаю iterations// заебись начальник, говнокод устранен
 }
 
 void search_substring(vector * text, const vector * pattern, int * total_index, const int * shift_table, FILE * thread_out)
@@ -125,28 +125,9 @@ int main(void)
     FILE * thread_in = fopen( "in.txt", "r");
     FILE * thread_out = fopen( "out.txt", "w");
 
-/*
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\CLionProjects\\lab1-0\\in.txt", "r");
-    FILE * thread_out = fopen( "C:\\Users\\dinis\\CLionProjects\\lab1-0\\out.txt", "w");
-*//*
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab1-0\\test\\in.txt", "r");
-    FILE * thread_out = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab1-0\\test\\out.txt", "w");
-*/
     vector pattern = create_vector( K_max_pattern_len );
     vector text = create_vector( K_max_chunk_len );
 
-    /*if ( thread_in == NULL)
-    {
-        do_before_exit( &pattern, &text, thread_in, thread_out);
-        print_other_error( __LINE__ );
-        return 0;
-    }
-    if ( thread_out == NULL)
-    {
-        do_before_exit( &pattern, &text, thread_in, thread_out);
-        print_other_error( __LINE__ );
-        return 0;
-    }*/
     if ( pattern.array == NULL )
     {
         do_before_exit( &pattern, &text, thread_in, thread_out);
