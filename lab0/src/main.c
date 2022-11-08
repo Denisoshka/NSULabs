@@ -10,6 +10,7 @@ const int K_base_numbers[16] = {0, 1, 2, 3,
                                 12, 13, 14, 15};
 const int K_max_input_number_len = 13;
 const int K_max_after_dot_numbers = 12;
+const int K_other_error = 1;
 
 typedef struct ST_vector
 {
@@ -32,27 +33,38 @@ ST_vector make_vector(void)
 
 const char * K_all_symbols = "0123456789abcdef";
 
-void other_error( int line)
+void other_error( int line, int * flag, int error )
 {
     printf( "line: %d", line);
-    exit( EXIT_FAILURE);
+    * flag = error;
 }
 
-void scan_number(ST_vector * vector)
+void scan_number(ST_vector * vector, int * flag)
 {
+    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab0\\test\\in.txt", "r");
+    if( thread_in == NULL)
+    {
+        other_error( __LINE__, flag, K_other_error);
+        return;
+    }
+
     vector -> char_number = malloc( (K_max_input_number_len + 1) * sizeof(char) );
 
     if (vector -> char_number == NULL)
     {
-        other_error( __LINE__);
+        other_error( __LINE__, flag, K_other_error);
+        return;
     }
 
-    if( scanf( "%13s", vector->char_number) != 1 )
+    if( fscanf(thread_in, "%13s", vector->char_number) != 1 )
     {
-        other_error(__LINE__);
+        other_error(__LINE__, flag, K_other_error);
+        return;
     }
 
-    vector -> number_len = strlen( vector->char_number);
+    vector -> number_len = (int)strlen( vector->char_number);
+
+    fclose( thread_in);
 }
 
 void destroy_vector( ST_vector * our_vector )
@@ -103,7 +115,7 @@ int is_symbol_less_base( const char symbol, const int K_base_from )
     return condition;
 }
 
-size_t is_valid_char( const ST_vector * our_vector, const int K_base_from )
+int is_valid_char( const ST_vector * our_vector, const int K_base_from )
 {
     if ( ( our_vector -> dot_index == 0 ) || ( our_vector -> dot_index == our_vector -> number_len - 1 ) )
     {
@@ -133,6 +145,8 @@ int is_valid_bases( const int K_base1, const int K_base2 )
 {
     return ( 2 <= K_base1 && K_base1 <= 16 && 2 <= K_base2 && K_base2<= 16 );
 }
+
+
 void is_fractional( ST_vector * our_vector )
 {
     for ( int index = our_vector -> dot_index + 1 ; index < our_vector->number_len; index++)
@@ -146,6 +160,7 @@ void is_fractional( ST_vector * our_vector )
 
     our_vector->fractional = 0;
 }
+
 
 void prepare_vector( ST_vector * our_vector)
 {
@@ -173,6 +188,7 @@ double convert_from_char_to_double(ST_vector * our_vector, const int K_number_ba
     }
     return result;
 }
+
 
 void convert_from_double_to_char(ST_vector * our_vector, double decimal, const int K_base_to )
 {
@@ -206,6 +222,7 @@ void convert_from_double_to_char(ST_vector * our_vector, double decimal, const i
     our_vector->char_number[ result_len ] = '\0';
 }
 
+
 long long int convert_from_char_to_int( ST_vector * our_vector, const int K_number_base_from)
 {
     long long int result = 0;
@@ -213,12 +230,12 @@ long long int convert_from_char_to_int( ST_vector * our_vector, const int K_numb
     for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
     {
         int back_index = our_vector->dot_index - 1 - front_index;
-        /*back_index - отвечает за то в какую степень будем возводить число
-          front_index - отвечает за расположение числа в строке */
+        
         result += (long long int)return_necessary_number( our_vector->char_number[ front_index ] ) * (long long int)pow(K_number_base_from, back_index ) ;
     }
     return result;
 }
+
 
 void convert_from_int_to_char( ST_vector * our_vector, long long int int_number, const long long int K_base_to )
 {
@@ -239,8 +256,7 @@ void convert_from_int_to_char( ST_vector * our_vector, long long int int_number,
 }
 
 
-
-void print_converted_number(ST_vector *our_vector, const int K_base_from, const int K_base_to )
+void print_converted_number(ST_vector *our_vector, const int K_base_from, const int K_base_to, int * flag )
 {
     if ( our_vector->fractional )
     {
@@ -252,51 +268,75 @@ void print_converted_number(ST_vector *our_vector, const int K_base_from, const 
         long long int result = convert_from_char_to_int( our_vector, K_base_from );
         convert_from_int_to_char( our_vector, result, K_base_to );
     }
-    printf("%s\n", our_vector->char_number );
+
+    FILE * thread_out = fopen("C:\\Users\\dinis\\Desktop\\template-lab0\\lab0\\test\\out.txt", "w");
+    if ( thread_out == NULL )
+    {
+        other_error( __LINE__, flag, K_other_error);
+        return;
+    }
+    fprintf(thread_out, "%s\n", our_vector->char_number );
+    fclose( thread_out );
 }
 
-void exit_with_bad_input( ST_vector *our_vector )
-{
-    printf("bad input\n" );
-    destroy_vector( our_vector );
-    exit( EXIT_SUCCESS);
-}
 
-void are_all_conditions_complied( ST_vector *our_vector, const int K_count_of_scan,
+int are_all_conditions_complied( ST_vector *our_vector, const int K_count_of_scan,
                                   const int K_base_to, const int K_base_from)
 {
     if ( our_vector->char_number[0] == '\0' )
     {
-        exit_with_bad_input( our_vector );
+        return 0;
     }
 
     if ( !is_valid_bases(K_base_from, K_base_to) )
     {
-        exit_with_bad_input(our_vector);
+        return 0;
     }
+
     if ( !is_valid_char( our_vector, K_base_from) )
     {
-        exit_with_bad_input(our_vector);
+        return 0;
     }
+
     if ( K_count_of_scan != 2)
     {
-        exit_with_bad_input(our_vector);
+        return 0;
     }
+    return 1;
 }
 
 int main(void )
 {
-    int base_from, base_to, count_of_scan_systems;
+    int flag= 0,
+        base_from,
+        base_to,
+        count_of_scan_systems;
+
     count_of_scan_systems = scanf("%d%d", &base_from, &base_to);
 
     ST_vector main_vector = make_vector();
-    scan_number( &main_vector );
+
+    scan_number( &main_vector, &flag );
+    if ( flag!=0)
+    {
+        destroy_vector( &main_vector);
+        return 0;
+    }
 
     prepare_vector( &main_vector);
 
-    are_all_conditions_complied( &main_vector, count_of_scan_systems, base_to, base_from );
-
-    print_converted_number( &main_vector, base_from, base_to );
+    if ( are_all_conditions_complied( &main_vector, count_of_scan_systems, base_to, base_from ) )
+    {
+        print_converted_number(&main_vector, base_from, base_to, &flag);
+        if ( flag != 0)
+        {
+            return 0;
+        }
+    }
+    else
+    {
+        printf("bad input\n" );
+    }
 
     destroy_vector( &main_vector);
 
