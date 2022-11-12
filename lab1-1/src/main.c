@@ -77,48 +77,70 @@ void update_hash_and_get(vector * text, const vector * pattern, const int flag )
     text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
 }
 
-void rabin_carp_algorithm(vector * text, const vector * pattern, FILE * thread_in, FILE * thread_out )
+void search_substring(vector * text, const vector * pattern, const int * total_index, FILE * thread_out)
 {
+    int print_index = * total_index - pattern->array_len + 1;
+
+    for( int pattern_work_index = 0, text_work_index = text->additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
+    {
+        fprintf( thread_out, "%d ", print_index + pattern_work_index);
+
+        if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
+        {
+            break;
+        }
+    }
+}
+
+void rabin_carp_algorithm(const vector * pattern, FILE * thread_in)
+{
+    vector text = create_vector( K_max_chunk_len );
+    if ( text.array == NULL)
+    {
+        printf("__LINE__ %d", __LINE__);
+        return;
+    }
+    FILE * thread_out = fopen( "out.txt", "w");
+    if ( thread_out == NULL)
+    {
+        destroy_vector( &text );
+        printf("__LINE__ %d", __LINE__);
+        return;
+    }
+    
     int total_index = pattern->array_len;
-    text->additional = pattern->array_len - 1;
-    text->array_len = (int)fread( text->array, sizeof (unsigned char ), K_max_chunk_len, thread_in);
+    text.additional = pattern->array_len - 1;
+    text.array_len = (int)fread( text.array, sizeof (unsigned char ), K_max_chunk_len, thread_in);
 
     fprintf( thread_out, "%d ", pattern->hash);
 
-    if (pattern->array_len <= text->array_len)
+    if (pattern->array_len <= text.array_len)
     {
-        get_hash( text, pattern);
+        get_hash( &text, pattern);
     }
-    while (pattern->array_len <= text->array_len)
+    while (pattern->array_len <= text.array_len)
     {
-        if (pattern->hash == text->hash)
+        if (pattern->hash == text.hash)
         {
-            int print_index = total_index - pattern->array_len + 1;
-
-            for( int pattern_work_index = 0, text_work_index = text->additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
-            {
-                fprintf( thread_out, "%d ", print_index + pattern_work_index);
-
-                if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
-                {
-                    break;
-                }
-            }
+            search_substring( &text, pattern, &total_index,  thread_out);
         }
 
         total_index++;
-        text->additional++;
+        text.additional++;
 
-        if ( text->additional >= text->array_len )
+        if ( text.additional >= text.array_len )
         {
-            text_rewrite(text, pattern, thread_in);
-            update_hash_and_get(text, pattern, 0);
+            text_rewrite(&text, pattern, thread_in);
+            update_hash_and_get(&text, pattern, 0);
         }
         else
         {
-            update_hash_and_get(text, pattern, 1);
+            update_hash_and_get(&text, pattern, 1);
         }
     }
+    
+    fclose( thread_out);
+    destroy_vector( &text);
 }
 
 int main(void)
@@ -129,39 +151,22 @@ int main(void)
         printf("__LINE__ %d", __LINE__);
         return 0;
     }
-    FILE * thread_out = fopen( "out.txt", "w");
-    if ( thread_out == NULL)
-    {
-        fclose( thread_in );
-        printf("__LINE__ %d", __LINE__);
-        return 0;
-    }
     vector pattern = create_vector( K_max_pattern_len );
     if ( pattern.array == NULL)
     {
         fclose( thread_in );
-        fclose( thread_out);
         printf("__LINE__ %d", __LINE__);
         return 0;
     }
-    vector text = create_vector( K_max_chunk_len );
-    if ( text.array == NULL)
-    {
-        fclose( thread_in );
-        fclose( thread_out);
-        destroy_vector( &pattern );
-        printf("__LINE__ %d", __LINE__);
-        return 0;
-    }
+    
 
     scan_pattern( &pattern, thread_in);
     pattern.additional = get_hash( &pattern, &pattern);
-    rabin_carp_algorithm( &text, &pattern, thread_in, thread_out);
+    
+    rabin_carp_algorithm( &pattern, thread_in );
 
     fclose( thread_in );
-    fclose( thread_out);
     destroy_vector( &pattern );
-    destroy_vector( &text);
-
+    
     return 0;
 }
