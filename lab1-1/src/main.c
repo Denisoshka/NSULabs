@@ -1,26 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define K_max_pattern_len (int)16
-#define K_max_chunk_len (int)1024
-#define K_shift_table_size (int)256
+const int K_max_pattern_len = 16,
+     K_max_chunk_len = 1024,
+     K_hash_base = 3;
 
 typedef struct vector{
     unsigned char * array;
     int array_len;
-    int sub_index;
+    int additional;
+    int hash;
 }vector;
 
-vector create_vector( int necessary_array_len )
+vector create_vector( const int necessary_array_len )
 {
     vector blank = {
             .array = malloc( sizeof(unsigned char) * necessary_array_len ),
             .array_len = necessary_array_len,
-            .sub_index = 0,
-            };
+            .additional = 0,
+            .hash = 0,
+    };
     return blank;
 }
-
 void destroy_vector( vector * blank )
 {
     free( blank->array );
@@ -39,76 +40,89 @@ void scan_pattern( vector * pattern, const FILE * thread_in )
     pattern->array_len = index;
 }
 
-void make_shift_table( const vector * pattern, int * shift_table )
+int get_hash(vector * blank, const vector * pattern)
 {
-    for ( int i = 0; i < K_shift_table_size; i++)
+    int degree = 1;
+    for( int index  = 0 ; index < pattern->array_len; index++, degree *= K_hash_base)
     {
-        shift_table[i] = pattern->array_len;
+        blank->hash += ( blank->array[index] % K_hash_base ) * degree;
     }
-
-    int shift = 1;
-
-    for ( int i = pattern->array_len - 2; i >= 0; i-- )
-    {
-        if ( shift_table[ pattern->array[i] ] == pattern->array_len )
-        {
-            shift_table[ pattern->array[i] ] = shift++;
-        }
-    }
+    return degree/3;
 }
 
-void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
+void text_rewrite( vector * text, const vector * pattern, const FILE * thread_in )
 {
-    int where_start_rewrite = text->sub_index - pattern->array_len + 1;
-    int iterations_quantity = pattern->array_len - text->sub_index + text->array_len - 1;
+    int where_start_rewrite = text->additional - pattern->array_len + 1;
+    int iterations_quantity = pattern->array_len - text->additional + text->array_len - 1;
 
-    for ( int iteration = 0; iteration < iterations_quantity ; iteration++)
+    for ( int iteration = 0; iteration < iterations_quantity ; iteration++, where_start_rewrite++)
     {
-        text->array[iteration] = text->array[where_start_rewrite + iteration];
+        text->array[iteration] = text->array[where_start_rewrite];
     }
     text -> array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, thread_in) + iterations_quantity;
-    text->sub_index = pattern->array_len - 1;
+    text->additional = pattern->array_len - 1;
 }
 
-void search_substring(vector * text, const vector * pattern, int * total_index, const int * shift_table, FILE * thread_out)
+void update_hash_and_get(vector * text, const vector * pattern, const int flag )
 {
-    for( int pattern_work_index = pattern->array_len - 1, text_work_index = text -> sub_index; pattern_work_index>=0; pattern_work_index--, text_work_index--)
+    if (flag)
     {
-        fprintf( thread_out, "%d ", *total_index + pattern_work_index - pattern->array_len + 1 );
-
-        if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
-        {
-            *total_index += shift_table[ text->array[ text->sub_index ] ];
-            text->sub_index += shift_table[ text->array[ text->sub_index ] ];
-            return;
-        }
+        text->hash -= text->array[text->additional - pattern->array_len] % K_hash_base;
     }
-    *total_index += pattern->array_len;
-    text->sub_index += pattern->array_len;
+    else
+    {
+        text->hash -= text->array[0] % K_hash_base;
+    }
+    text->hash /= K_hash_base;
+    text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
 }
 
-void booyer_moore_algorithm(vector * text, const vector * pattern, const int * shift_table, FILE * thread_in, FILE * thread_out )
+void rabin_carp_algorithm(vector * text, const vector * pattern, const FILE * thread_in, FILE * thread_out )
 {
     int total_index = pattern->array_len;
-    text->sub_index = pattern->array_len - 1;
-
+    text->additional = pattern->array_len - 1;
     text->array_len = (int)fread( text->array, sizeof (unsigned char ), K_max_chunk_len, thread_in);
 
-    while ( pattern->array_len <= text->array_len )
-    {
-        search_substring( text, pattern, &total_index, shift_table, thread_out);
+    fprintf( thread_out, "%d ", pattern->hash);
 
-        if (text->sub_index >= text->array_len )
+    if (pattern->array_len <= text->array_len)
+    {
+        get_hash( text, pattern);
+    }
+    while (pattern->array_len <= text->array_len)
+    {
+        if (pattern->hash == text->hash)
+        {
+            int print_index = total_index - pattern->array_len + 1;
+
+            for( int pattern_work_index = 0, text_work_index = text->additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
+            {
+                fprintf( thread_out, "%d ", print_index + pattern_work_index);
+
+                if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
+                {
+                    break;
+                }
+            }
+        }
+
+        total_index++;
+        text->additional++;
+
+        if ( text->additional >= text->array_len )
         {
             text_rewrite(text, pattern, thread_in);
+            update_hash_and_get(text, pattern, 0);
+        }
+        else
+        {
+            update_hash_and_get(text, pattern, 1);
         }
     }
 }
 
 int main(void)
 {
-    int shift_table [ K_shift_table_size ];
-
     FILE * thread_in = fopen( "in.txt", "r");
     if ( thread_in == NULL )
     {
@@ -141,12 +155,13 @@ int main(void)
     }
 
     scan_pattern( &pattern, thread_in);
-    make_shift_table( &pattern, shift_table );
-    booyer_moore_algorithm( &text, &pattern, shift_table, thread_in, thread_out );
+    pattern.additional = get_hash( &pattern, &pattern);
+    rabin_carp_algorithm( &text, &pattern, thread_in, thread_out);
 
-    destroy_vector( &pattern);
-    destroy_vector( &text);
     fclose( thread_in );
     fclose( thread_out);
+    destroy_vector( &pattern );
+    destroy_vector( &text);
+
     return 0;
 }
