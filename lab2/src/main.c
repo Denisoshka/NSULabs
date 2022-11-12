@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-const int K_max_string_len = 1024;
+const int K_chunk_len = 1024;
 const int K_loop_not_start = -1;
-const int K_other_error = -3;
 
 typedef struct ST_vector
 {
@@ -23,10 +21,10 @@ ST_vector create_vector(void)
     return our_vector;
 }
 
-void other_error( int line, int * flag, int error )
+void print_error_on_line( int line, int * flag )
 {
-    printf( "line: %d", line);
-    * flag = error;
+    printf( "__LINE__ %d", line);
+    * flag = 1;
 }
 
 void swap(char * first, char * second)
@@ -39,41 +37,46 @@ void swap(char * first, char * second)
 void destroy_vector( ST_vector * our_vector)
 {
     free(our_vector->pattern);
+    our_vector->pattern = NULL;
 }
 
 void scan_pattern( ST_vector * our_vector, int * flag )
 {
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab2\\test\\in.txt", "r");
-    if (thread_in == NULL)
+    FILE * thread_in = fopen( "in.txt", "r");
+    if ( thread_in == NULL )
     {
-        other_error(__LINE__, flag,K_other_error);
+        print_error_on_line( __LINE__, flag);
         return;
     }
 
-    our_vector->pattern = malloc( sizeof(char) * K_max_string_len);
-    if (our_vector -> pattern == NULL)
+    int iteration = 0;
+    for ( char symbol; fread( &symbol, 1, sizeof(char), thread_in) != 0 && symbol!='\n'; iteration++)
     {
-        fclose( thread_in);
-        other_error(__LINE__, flag,K_other_error);
-        return;
+        if ( iteration>= K_chunk_len )
+        {
+            our_vector->pattern = realloc( our_vector->pattern, sizeof (char) * (iteration + K_chunk_len));
+            if (our_vector == NULL)
+            {
+                print_error_on_line( __LINE__, flag );
+                fclose( thread_in);
+                return ;
+            }
+            our_vector->pattern[iteration] = symbol;
+        }
+        else
+        {
+            our_vector->pattern[iteration] = symbol;
+        }
     }
-
-    if ( 0 == fscanf(thread_in , "%1023[^\n]s", our_vector->pattern))
-    {
-        fclose( thread_in);
-        other_error(__LINE__, flag,K_other_error);
-        return;
-    }
-
-    our_vector -> pattern_len = (int)strlen(our_vector->pattern);
+    our_vector -> pattern_len = iteration;
 
     if ( 1 != fscanf(thread_in, "%d", &our_vector->permutations_quantity))
     {
+        print_error_on_line( __LINE__, flag );
         fclose( thread_in);
-        other_error(__LINE__, flag,K_other_error);
         return;
     }
-    fclose( thread_in );
+
 }
 
 int is_string_correct( const ST_vector * our_vector )
@@ -170,9 +173,15 @@ int main(void)
 
     int flag = 0;
     ST_vector vector = create_vector();
+    vector.pattern = malloc( K_chunk_len );
+    if ( vector.pattern == NULL)
+    {
+        print_error_on_line( __LINE__, &flag);
+        return 0;
+    }
 
-    scan_pattern(&vector, &flag );
-    if ( flag != 0)
+    scan_pattern(&vector, &flag);
+    if ( flag )
     {
         destroy_vector(&vector );
         return 0;
@@ -188,5 +197,6 @@ int main(void)
     print_permutation(&vector);
 
     destroy_vector(&vector );
+
     return 0;
 }
