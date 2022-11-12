@@ -43,6 +43,7 @@ void destroy_vector( ST_vector * our_vector)
 void scan_pattern( ST_vector * our_vector, int * flag )
 {
     FILE * thread_in = fopen( "in.txt", "r");
+
     if ( thread_in == NULL )
     {
         print_error_on_line( __LINE__, flag);
@@ -68,7 +69,7 @@ void scan_pattern( ST_vector * our_vector, int * flag )
             our_vector->pattern[iteration] = symbol;
         }
     }
-    our_vector -> pattern[iteration - 1] = '\0';
+    our_vector -> pattern[iteration] = '\0';
     our_vector -> pattern_len = iteration;
 
     if ( 1 != fscanf(thread_in, "%d", &our_vector->permutations_quantity))
@@ -187,16 +188,26 @@ int main(void)
         destroy_vector(&vector );
         return 0;
     }
+    
+    FILE * thread_out = fopen( "out.txt", "w");
+    if ( thread_out == NULL)
+    {
+        print_error_on_line( __LINE__, &flag);
+        destroy_vector( &vector);
+        return 0;
+    }
 
     if ( !is_string_correct( &vector ) )
     {
-        printf( "bad input");
+        fprintf( thread_out, "bad input");
+        fclose( thread_out);
         destroy_vector(&vector );
         return 0;
     }
 
     print_permutation(&vector);
 
+    fclose( thread_out);
     destroy_vector(&vector );
 
     return 0;
