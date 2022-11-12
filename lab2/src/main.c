@@ -68,6 +68,7 @@ void scan_pattern( ST_vector * our_vector, int * flag )
             our_vector->pattern[iteration] = symbol;
         }
     }
+    our_vector -> pattern[iteration - 1] = '\0';
     our_vector -> pattern_len = iteration;
 
     if ( 1 != fscanf(thread_in, "%d", &our_vector->permutations_quantity))
