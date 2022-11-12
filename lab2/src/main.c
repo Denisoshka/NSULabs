@@ -78,7 +78,7 @@ void scan_pattern( ST_vector * our_vector, int * flag )
         fclose( thread_in);
         return;
     }
-
+    fclose( thread_in);
 }
 
 int is_string_correct( const ST_vector * our_vector )
@@ -188,7 +188,7 @@ int main(void)
         destroy_vector(&vector );
         return 0;
     }
-    
+
     FILE * thread_out = fopen( "out.txt", "w");
     if ( thread_out == NULL)
     {
