@@ -28,7 +28,7 @@ void destroy_vector( vector * blank )
     blank->array = NULL;
 }
 
-void scan_pattern( vector * pattern, const FILE * thread_in )
+void scan_pattern( vector * pattern, FILE * thread_in )
 {
     int index = 0;
     unsigned char symbol;
@@ -50,7 +50,7 @@ int get_hash(vector * blank, const vector * pattern)
     return degree/3;
 }
 
-void text_rewrite( vector * text, const vector * pattern, const FILE * thread_in )
+void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
 {
     int where_start_rewrite = text->additional - pattern->array_len + 1;
     int iterations_quantity = pattern->array_len - text->additional + text->array_len - 1;
@@ -77,7 +77,7 @@ void update_hash_and_get(vector * text, const vector * pattern, const int flag )
     text->hash += (text->array[text->additional] % K_hash_base) * pattern->additional;
 }
 
-void rabin_carp_algorithm(vector * text, const vector * pattern, const FILE * thread_in, FILE * thread_out )
+void rabin_carp_algorithm(vector * text, const vector * pattern, FILE * thread_in, FILE * thread_out )
 {
     int total_index = pattern->array_len;
     text->additional = pattern->array_len - 1;
