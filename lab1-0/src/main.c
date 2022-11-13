@@ -46,9 +46,7 @@ void make_shift_table( const vector * pattern, int * shift_table )
         shift_table[i] = pattern->array_len;
     }
 
-    int shift = 1;
-
-    for ( int i = pattern->array_len - 2; i >= 0; i-- )
+    for ( int i = pattern->array_len - 2, shift = 1; i >= 0; i-- )
     {
         if ( shift_table[ pattern->array[i] ] == pattern->array_len )
         {
