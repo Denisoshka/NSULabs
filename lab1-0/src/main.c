@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define K_max_pattern_len (int)16
-#define K_max_chunk_len (int)1024
-#define K_shift_table_size (int)256
+#define K_max_pattern_len 16
+#define K_max_chunk_len 1024
+#define K_shift_table_size 256
 
 typedef struct vector{
     unsigned char * array;
@@ -14,7 +14,7 @@ typedef struct vector{
 vector create_vector( int necessary_array_len )
 {
     vector blank = {
-            .array = malloc( sizeof(unsigned char) * necessary_array_len ),
+            .array = NULL,
             .array_len = necessary_array_len,
             .sub_index = 0,
             };
@@ -133,6 +133,7 @@ int main(void)
     }
 
     vector pattern = create_vector( K_max_pattern_len );
+    pattern.array = malloc( sizeof(unsigned char) * K_max_pattern_len );
     if ( pattern.array == NULL)
     {
         fclose( thread_in );
