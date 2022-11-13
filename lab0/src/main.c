@@ -78,9 +78,7 @@ void get_dot_index( ST_vector * our_vector )
 
 int get_necessary_number( const char symbol )
 {
-    int in_range_2_9 = ( '0' <= symbol) && (symbol <= '9' );
-
-    if ( in_range_2_9 )
+    if ( ( '0' <= symbol) && (symbol <= '9' ) )
     {
         return K_base_numbers[ symbol - '0' ];
     }else
@@ -91,9 +89,9 @@ int get_necessary_number( const char symbol )
 
 int is_symbol_less_base( const char symbol, const int K_base_from )
 {
-    int symbol_in_range_2_base_from_9 = ( ( '0' <= symbol ) && ( symbol < '0' + K_base_from ) );
-    int symbol_in_range_a_base_from_f = ( ( 'a' <= symbol ) && ( symbol < 'a' + K_base_from - 10 ) );
-    int condition = ( symbol <= '9' ) ? symbol_in_range_2_base_from_9 : symbol_in_range_a_base_from_f;
+    int symbol_in_range_2_base_from = ( ( '0' <= symbol ) && ( symbol < '0' + K_base_from ) );
+    int symbol_in_range_a_base_from = ( ( 'a' <= symbol ) && ( symbol < 'a' + K_base_from - 10 ) );
+    int condition = ( symbol <= '9' ) ? symbol_in_range_2_base_from : symbol_in_range_a_base_from;
 
     return condition;
 }
@@ -133,7 +131,6 @@ int is_valid_bases( const int K_base1, const int K_base2 )
 {
     return ( 2 <= K_base1 && K_base1 <= 16 && 2 <= K_base2 && K_base2<= 16 );
 }
-
 
 void is_fractional( ST_vector * our_vector )
 {
