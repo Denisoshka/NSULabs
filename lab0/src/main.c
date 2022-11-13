@@ -223,7 +223,7 @@ int get_non_fractional_part_len( const long long int non_fractional_result, int 
     return non_fractional_result_len;
 }
 
-void convert_number(ST_vector *vector, const int K_base_from, const int K_base_to, int * flag )
+void convert_number(ST_vector *vector, const int K_base_from, const int K_base_to )
 {
     long long int non_fractional_part = convert_from_char_non_fractional_part(vector, K_base_from);
     double fractional_part = convert_from_char_fractional_part(vector, K_base_from );
@@ -287,7 +287,7 @@ int main(void )
 
     if ( is_valid_bases(base_from, base_to) && is_valid_char( &vector, base_from))
     {
-        convert_number(&vector, base_from, base_to, &flag);
+        convert_number(&vector, base_from, base_to);
         print_converted_number( &vector );
     }
     else
