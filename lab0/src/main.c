@@ -10,7 +10,6 @@ const int K_base_numbers[16] = {0, 1, 2, 3,
                                 12, 13, 14, 15};
 const int K_max_input_number_len = 13;
 const int K_max_after_dot_numbers = 12;
-const int K_other_error = 1;
 
 typedef struct ST_vector
 {
@@ -33,43 +32,28 @@ ST_vector make_vector(void)
 
 const char * K_all_symbols = "0123456789abcdef";
 
-void other_error( int line, int * flag, int error )
+void print_error_on_line( const int line, int * flag )
 {
     printf( "line: %d", line);
-    * flag = error;
+    * flag = 1;
 }
 
-void scan_number(ST_vector * vector, int * flag)
+void scan_number(ST_vector * vector, FILE * thread_in, int * flag)
 {
-    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab0\\test\\in.txt", "r");
-    if( thread_in == NULL)
-    {
-        other_error( __LINE__, flag, K_other_error);
-        return;
-    }
-
-    vector -> char_number = malloc( (K_max_input_number_len + 1) * sizeof(char) );
-
-    if (vector -> char_number == NULL)
-    {
-        other_error( __LINE__, flag, K_other_error);
-        return;
-    }
-
     if( fscanf(thread_in, "%13s", vector->char_number) != 1 )
     {
-        other_error(__LINE__, flag, K_other_error);
+        fclose(thread_in );
+        print_error_on_line(__LINE__, flag);
         return;
     }
 
     vector -> number_len = (int)strlen( vector->char_number);
-
-    fclose( thread_in);
 }
 
 void destroy_vector( ST_vector * our_vector )
 {
     free( our_vector->char_number);
+    our_vector->char_number = NULL;
 }
 
 void make_lower_char(ST_vector * our_vector)
@@ -93,7 +77,7 @@ void get_dot_index( ST_vector * our_vector )
     our_vector->dot_index = index;
 }
 
-int return_necessary_number( const char symbol )
+int get_necessary_number( const char symbol )
 {
     int in_range_2_9 = ( '0' <= symbol) && (symbol <= '9' );
 
@@ -115,24 +99,29 @@ int is_symbol_less_base( const char symbol, const int K_base_from )
     return condition;
 }
 
-int is_valid_char( const ST_vector * our_vector, const int K_base_from )
+int is_valid_char(const ST_vector * vector, const int K_base_from )
 {
-    if ( ( our_vector -> dot_index == 0 ) || ( our_vector -> dot_index == our_vector -> number_len - 1 ) )
+    if ( vector->char_number[0] == '\0' )
     {
         return 0;
     }
 
-    for( int index = 0 ; index < our_vector -> dot_index; index++ )
+    if ((vector -> dot_index == 0 ) || (vector -> dot_index == vector -> number_len - 1 ) )
     {
-        if ( !is_symbol_less_base( our_vector -> char_number[ index ] , K_base_from ) )
+        return 0;
+    }
+
+    for(int index = 0 ; index < vector -> dot_index; index++ )
+    {
+        if ( !is_symbol_less_base(vector -> char_number[ index ] , K_base_from ) )
         {
             return 0;
         }
     }
 
-    for( int index = our_vector -> dot_index + 1 ; index < our_vector -> number_len; index++ )
+    for(int index = vector -> dot_index + 1 ; index < vector -> number_len; index++ )
     {
-        if ( !is_symbol_less_base( our_vector -> char_number[ index ], K_base_from ) )
+        if ( !is_symbol_less_base(vector -> char_number[ index ], K_base_from ) )
         {
             return 0;
         }
@@ -157,188 +146,156 @@ void is_fractional( ST_vector * our_vector )
             return;
         }
     }
-
     our_vector->fractional = 0;
 }
 
-
-void prepare_vector( ST_vector * our_vector)
+long long int powlli( const long long int number, const int degree)
 {
-    make_lower_char( our_vector);
-    get_dot_index( our_vector );
-    is_fractional( our_vector);
-}
-
-
-double convert_from_char_to_double(ST_vector * our_vector, const int K_number_base1)
-{
-    double result = 0;
-    int additional_index;
-
-    for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
-    {
-        additional_index = our_vector -> dot_index - 1 - front_index;
-        result += return_necessary_number( our_vector->char_number[front_index] ) * pow(K_number_base1,  (int)additional_index ) ;
-    }
-
-    for ( int index = our_vector->dot_index + 1; index < our_vector->number_len; index++ )
-    {
-        additional_index = our_vector->dot_index - index;
-        result += return_necessary_number( our_vector->char_number[index] ) * pow(K_number_base1, additional_index );
-    }
+    long long int result = 1;
+    for (int iteration = 0; iteration < degree; iteration++, result *= number);
     return result;
 }
 
-
-void convert_from_double_to_char(ST_vector * our_vector, double decimal, const int K_base_to )
+long long int convert_from_char_non_fractional_part(const ST_vector * our_vector, const int K_base_from)
 {
-    int result_non_fractional_part_len = 0;
-    long int int_part_of_decimal = ( long int )decimal;
-    double fractional_part_of_decimal = decimal - ( double )int_part_of_decimal;
+    long long int non_fractional_result = 0;
 
-    do{
-        result_non_fractional_part_len++;
-    }while( int_part_of_decimal >= (long int)pow(K_base_to, result_non_fractional_part_len ) );
-
-    int result_len = result_non_fractional_part_len + 1 + K_max_after_dot_numbers;
-
-    our_vector->char_number = realloc( our_vector->char_number, (result_len + 1) * sizeof(char));
-
-    for( int back_index = result_non_fractional_part_len - 1; back_index >= 0; back_index-- )
+    for ( int front_index = 0, additional_index = our_vector -> dot_index - 1; front_index < our_vector->dot_index; front_index++, additional_index-- )
     {
-        our_vector->char_number[back_index] = K_all_symbols[int_part_of_decimal % K_base_to];
-        int_part_of_decimal /= K_base_to;
+        non_fractional_result += get_necessary_number( our_vector->char_number[front_index] ) * powlli(K_base_from, additional_index ) ;
     }
-
-    our_vector->char_number[result_non_fractional_part_len] = '.';
-
-    for ( int index = result_non_fractional_part_len + 1; index < result_len; index++ )
-    {
-        fractional_part_of_decimal *= K_base_to;
-        our_vector->char_number[ index ] = K_all_symbols[ (int)fractional_part_of_decimal ];
-        fractional_part_of_decimal -= (int)fractional_part_of_decimal;
-    }
-
-    our_vector->char_number[ result_len ] = '\0';
+    return non_fractional_result;
 }
 
-
-long long int convert_from_char_to_int( ST_vector * our_vector, const int K_number_base_from)
+double convert_from_char_fractional_part( const ST_vector * our_vector, const int K_base_from)
 {
-    long long int result = 0;
+    double fractional_result = 0;
 
-    for ( int front_index = 0; front_index < our_vector->dot_index; front_index++ )
+    for( int index = our_vector->dot_index + 1, degree = -1; index < our_vector->number_len; index++, degree-- )
     {
-        int back_index = our_vector->dot_index - 1 - front_index;
-        
-        result += (long long int)return_necessary_number( our_vector->char_number[ front_index ] ) * (long long int)pow(K_number_base_from, back_index ) ;
+        fractional_result += get_necessary_number( our_vector->char_number[index] ) * pow(K_base_from, degree);
     }
-    return result;
+    return fractional_result;
 }
 
-
-void convert_from_int_to_char( ST_vector * our_vector, long long int int_number, const long long int K_base_to )
+void convert_to_char(ST_vector * vector, long long int non_fractional_part, double fractional_part, int non_fractional_part_len, const int K_base_to )
 {
-    int result_len = 0;
+    int result_len = ( vector->fractional ) ? ( non_fractional_part_len + 1 + K_max_after_dot_numbers ) : non_fractional_part_len;
 
-    do{
-        result_len++;
-    }while( int_number >= (long long int)pow((double)K_base_to, (double)result_len ) );
-
-    our_vector->char_number = realloc( our_vector->char_number, ( result_len + 1 ) * sizeof(char) );
-
-    for(int back_index = result_len - 1; back_index >= 0 ; back_index-- )
+    vector->char_number = realloc(vector->char_number, (result_len + 1) * sizeof(char));
+    if (vector->char_number == NULL )
     {
-        our_vector->char_number[ back_index ] = K_all_symbols[ int_number % K_base_to ];
-        int_number /= K_base_to;
-    }
-    our_vector->char_number[ result_len ] = '\0';
-}
-
-
-void print_converted_number(ST_vector *our_vector, const int K_base_from, const int K_base_to, int * flag )
-{
-    if ( our_vector->fractional )
-    {
-        double result = convert_from_char_to_double(our_vector, K_base_from );
-        convert_from_double_to_char(our_vector, result, K_base_to );
-    }
-    else
-    {
-        long long int result = convert_from_char_to_int( our_vector, K_base_from );
-        convert_from_int_to_char( our_vector, result, K_base_to );
-    }
-
-    FILE * thread_out = fopen("C:\\Users\\dinis\\Desktop\\template-lab0\\lab0\\test\\out.txt", "w");
-    if ( thread_out == NULL )
-    {
-        other_error( __LINE__, flag, K_other_error);
+        printf( "__LINE__ %d", __LINE__);
         return;
     }
-    fprintf(thread_out, "%s\n", our_vector->char_number );
-    fclose( thread_out );
+
+    for( int back_index = non_fractional_part_len - 1; back_index >= 0; back_index-- )
+    {
+        vector->char_number[back_index] = K_all_symbols[non_fractional_part % K_base_to];
+        non_fractional_part /= K_base_to;
+    }
+
+    if ( !vector->fractional)
+    {
+        vector->char_number[ result_len ] = '\0';
+        return;
+    }
+
+    vector->char_number[non_fractional_part_len] = '.';
+
+    for ( int index = non_fractional_part_len + 1; index < result_len; index++ )
+    {
+        fractional_part *= K_base_to;
+        vector->char_number[ index ] = K_all_symbols[ (int)fractional_part ];
+        fractional_part -= (int)fractional_part;
+    }
+
+    vector->char_number[ result_len ] = '\0';
 }
 
-
-int are_all_conditions_complied( ST_vector *our_vector, const int K_count_of_scan,
-                                  const int K_base_to, const int K_base_from)
+int get_non_fractional_part_len( const long long int non_fractional_result, int K_base_to)
 {
-    if ( our_vector->char_number[0] == '\0' )
-    {
-        return 0;
-    }
+    int non_fractional_result_len = 0;
+    do{
+        non_fractional_result_len++;
+    }while( non_fractional_result >= powlli(K_base_to, non_fractional_result_len ) );
 
-    if ( !is_valid_bases(K_base_from, K_base_to) )
-    {
-        return 0;
-    }
+    return non_fractional_result_len;
+}
 
-    if ( !is_valid_char( our_vector, K_base_from) )
-    {
-        return 0;
-    }
+void convert_number(ST_vector *vector, const int K_base_from, const int K_base_to, int * flag )
+{
+    long long int non_fractional_part = convert_from_char_non_fractional_part(vector, K_base_from);
+    double fractional_part = convert_from_char_fractional_part(vector, K_base_from );
+    int non_fractional_part_len = get_non_fractional_part_len( non_fractional_part, K_base_to);
 
-    if ( K_count_of_scan != 2)
+    convert_to_char(vector, non_fractional_part, fractional_part, non_fractional_part_len, K_base_to );
+}
+
+void print_converted_number( const ST_vector *vector)
+{
+    FILE * thread_out = fopen( "out.txt", "w");
+    if ( thread_out == NULL )
     {
-        return 0;
+        printf( "__LINE__ %d", __LINE__);
+        return;
     }
-    return 1;
+    fprintf(thread_out, "%s\n", vector->char_number );
+    fclose( thread_out );
 }
 
 int main(void )
 {
-    int flag= 0,
-        base_from,
-        base_to,
-        count_of_scan_systems;
+    int flag= 0, base_from, base_to;
 
-    count_of_scan_systems = scanf("%d%d", &base_from, &base_to);
-
-    ST_vector main_vector = make_vector();
-
-    scan_number( &main_vector, &flag );
-    if ( flag!=0)
+    FILE * thread_in = fopen( "in.txt", "r");
+    if( thread_in == NULL)
     {
-        destroy_vector( &main_vector);
+        printf( "__LINE__ %d", __LINE__);
         return 0;
     }
 
-    prepare_vector( &main_vector);
-
-    if ( are_all_conditions_complied( &main_vector, count_of_scan_systems, base_to, base_from ) )
+    if( 2 != fscanf(thread_in,"%d%d", &base_from, &base_to) )
     {
-        print_converted_number(&main_vector, base_from, base_to, &flag);
-        if ( flag != 0)
-        {
-            return 0;
-        }
+        printf("bad input\n" );
+        fclose( thread_in );
+        return 0;
+    }
+
+    ST_vector vector = make_vector();
+    vector.char_number = malloc( sizeof(char) * (K_max_input_number_len + 1));
+    if (vector.char_number == NULL)
+    {
+        printf( "__LINE__ %d", __LINE__);
+        fclose( thread_in);
+        return 0;
+    }
+
+    scan_number( &vector, thread_in, &flag );
+    if ( flag )
+    {
+        destroy_vector( &vector);
+        fclose( thread_in);
+        return 0;
+    }
+
+    fclose( thread_in);
+
+    make_lower_char( &vector );
+    get_dot_index( &vector );
+    is_fractional( &vector);
+
+    if ( is_valid_bases(base_from, base_to) && is_valid_char( &vector, base_from))
+    {
+        convert_number(&vector, base_from, base_to, &flag);
+        print_converted_number( &vector );
     }
     else
     {
         printf("bad input\n" );
     }
 
-    destroy_vector( &main_vector);
+    destroy_vector( &vector);
 
     return 0;
 }
