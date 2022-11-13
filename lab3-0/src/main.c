@@ -15,58 +15,77 @@ ARRAY_vector create_array_vector(void)
     return vector;
 }
 
-void other_error( int line)
+void destroy_vector(ARRAY_vector * vector)
 {
-    printf( "line: %d", line);
-    exit( EXIT_FAILURE);
+    free( vector->array);
 }
 
-void prepare_vector( ARRAY_vector * vector)
+void swap(int * first, int * second)
+{
+    int additional = * first;
+    * first = * second;
+    * second = additional;
+}
+
+void print_error_on_line(int line, int * flag)
+{
+    printf( "line: %d", line);
+    * flag = 1;
+}
+
+void prepare_vector( ARRAY_vector * vector, int * flag)
 {
     FILE * thread_in = fopen( "in.txt", "r");
-//    FILE * thread_in = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab3-0\\test\\in.txt", "r");
     if (thread_in == NULL)
     {
-        other_error( __LINE__);
+        print_error_on_line(__LINE__, flag);
+        return;
     }
 
     if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
     {
-        other_error(__LINE__);
+        print_error_on_line(__LINE__, flag );
+        fclose(thread_in);
+        return;
     }
 
     vector -> array = malloc( vector -> array_len * sizeof(int));
     if (vector->array == NULL)
     {
-        other_error(__LINE__);
+        print_error_on_line(__LINE__, flag );
+        fclose(thread_in);
+        return;
     }
 
     for( int index = 0; index < vector->array_len; index++)
     {
         if ( fscanf(thread_in, "%d", &vector->array[index] ) != 1 )
         {
-            other_error(__LINE__);
+            print_error_on_line(__LINE__, flag );
+            fclose(thread_in);
+            return;
         }
     }
     fclose(thread_in);
 }
 
-void make_max_heap( ARRAY_vector * vector, int array_len, int root_index )
+void make_max_heap( ARRAY_vector * vector, const int array_len, const int root_index )
 {
-    int max_element_index = root_index,
-            left_index = 2 * root_index + 1,
-            right_index = 2 * root_index + 2;
+    int max_element_index = root_index;
+    const int left_index = 2 * root_index + 1,
+              right_index = 2 * root_index + 2;
 
     if ( left_index < array_len && vector->array[left_index] > vector->array[max_element_index] )
+    {
         max_element_index = left_index;
+    }
     if (  right_index < array_len && vector->array[right_index] > vector->array[max_element_index])
+    {
         max_element_index = right_index;
-
+    }
     if (max_element_index != root_index)
     {
-        int sub_element = vector->array[max_element_index];
-        vector->array[max_element_index] = vector->array[root_index];
-        vector->array[root_index] = sub_element;
+        swap(&vector->array[max_element_index], &vector->array[root_index]);
 
         make_max_heap(vector, array_len, max_element_index);
     }
@@ -74,49 +93,54 @@ void make_max_heap( ARRAY_vector * vector, int array_len, int root_index )
 
 void heap_sort( ARRAY_vector * vector )
 {
-    int array_len = vector -> array_len;
-    for( int index = array_len / 2 + 1; index >= 0; index--)
-        make_max_heap( vector, array_len, index);
-
-    for( int index = array_len - 1; index >= 0; index--)
+    for( int index = vector -> array_len / 2 + 1; index >= 0; index--)
     {
-        int sub_element = vector->array[0];
-        vector->array[0] = vector->array[index];
-        vector->array[index] = sub_element;
+        make_max_heap( vector, vector -> array_len, index);
+    }
+
+    for( int index = vector -> array_len - 1; index >= 0; index--)
+    {
+        swap(&vector->array[0], &vector->array[index]);
 
         make_max_heap(vector, index, 0);
     }
 }
 
-void print_array(const ARRAY_vector * vector)
+void print_array(const ARRAY_vector * vector, int * flag)
 {
     FILE * thread_out = fopen( "out.txt", "w");
-//    FILE * thread_out = fopen( "C:\\Users\\dinis\\CLionProjects\\lab3-0\\out.txt", "w");
     for( int index = 0; index < vector->array_len; index++)
     {
         if (fprintf(thread_out, "%d ", vector->array[index]) == -1)
         {
-            other_error(__LINE__);
+            print_error_on_line(__LINE__, flag);
+            break;
         }
     }
     fclose( thread_out);
 }
 
-void destroy_vector(ARRAY_vector * vector)
-{
-    free( vector->array);
-}
-
 int main(void)
 {
+    int flag = 0;
     ARRAY_vector vector = create_array_vector();
-    prepare_vector( &vector);
-    if ( vector.array_len > 1)
+    prepare_vector( &vector, &flag);
+    if (flag != 0)
     {
-        heap_sort(&vector);
+        destroy_vector( &vector);
+        return 0;
     }
-    print_array( &vector);
+
+    if ( vector.array_len <= 1)
+    {
+        destroy_vector( &vector);
+        return 0;
+    }
+    
+    heap_sort(&vector);
+    print_array( &vector, &flag);
+
     destroy_vector( &vector);
 
-    return EXIT_SUCCESS;
+    return 0;
 }
