@@ -90,7 +90,7 @@ void booyer_moore_algorithm( const vector * pattern, const int * shift_table, FI
     FILE * thread_out = fopen( "out.txt", "w");
     if (thread_out == NULL)
     {
-        printf( "__LINE__ %d", __LINE__);
+        printf( "__LINE__ %d\n", __LINE__);
         return;
     }
 
@@ -99,7 +99,7 @@ void booyer_moore_algorithm( const vector * pattern, const int * shift_table, FI
     if (text.array == NULL)
     {
         fclose( thread_out);
-        printf( "__LINE__ %d", __LINE__);
+        printf( "__LINE__ %d\n", __LINE__);
         return;
     }
 
@@ -128,7 +128,7 @@ int main(void)
     FILE * thread_in = fopen( "in.txt", "r");
     if ( thread_in == NULL )
     {
-        printf("__LINE__ %d", __LINE__);
+        printf("__LINE__ %d\n", __LINE__);
         return 0;
     }
 
@@ -136,7 +136,7 @@ int main(void)
     if ( pattern.array == NULL)
     {
         fclose( thread_in );
-        printf("__LINE__ %d", __LINE__);
+        printf("__LINE__ %d\n", __LINE__);
         return 0;
     }
 
