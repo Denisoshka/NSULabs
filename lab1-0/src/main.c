@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const int K_max_pattern_len 16,
-          K_max_chunk_len 1024,
-          K_shift_table_size 256;
+const int K_max_pattern_len = 16,
+          K_max_chunk_len = 1024,
+          K_shift_table_size = 256;
 
 typedef struct vector{
     unsigned char * array;
