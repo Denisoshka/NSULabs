@@ -95,6 +95,7 @@ void booyer_moore_algorithm( const vector * pattern, const int * shift_table, FI
         printf( "__LINE__ %d", __LINE__);
         return;
     }
+
     vector text = create_vector( K_max_chunk_len);
     text.array = malloc( sizeof(unsigned char) * K_max_chunk_len);
     if (text.array == NULL)
@@ -132,6 +133,7 @@ int main(void)
         printf("__LINE__ %d", __LINE__);
         return 0;
     }
+
     vector pattern = create_vector( K_max_pattern_len );
     if ( pattern.array == NULL)
     {
