@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void other_error(int line)
+void print_error_on_line(int line, int * flag )
 {
-    printf( "line: %d", line);
-    exit( EXIT_FAILURE);
+    printf( "__LINE__ %d", line);
+    * flag = 1;
 }
 
 typedef struct ARRAY_vector
@@ -27,28 +27,40 @@ void destroy_vector( ARRAY_vector * vector )
     free( vector->array );
 }
 
-void prepare_vector( ARRAY_vector * vector)
+void prepare_vector( ARRAY_vector * vector, int * flag)
 {
-
-    if ( scanf("%d", &vector->array_len) != 1 )
+    FILE * thread_in = fopen( "in.txt", "r");
+    if ( thread_in == NULL)
     {
-        other_error(__LINE__);
+        print_error_on_line(__LINE__, flag);
+        return;
+    }
+
+    if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
+    {
+        print_error_on_line(__LINE__, flag);
+        fclose( thread_in);
+        return;
     }
 
     vector -> array = malloc( vector->array_len * sizeof( int ) );
-
     if ( vector->array == NULL)
     {
-        other_error(__LINE__);
+        print_error_on_line(__LINE__, flag);
+        fclose( thread_in);
+        return;
     }
 
     for (int index = 0; index < vector->array_len; index++)
     {
-        if( scanf( "%d", &vector->array[index]) != 1)
+        if( fscanf( thread_in,"%d", &vector->array[index]) != 1)
         {
-            other_error(__LINE__);
+            print_error_on_line(__LINE__, flag);
+            fclose( thread_in);
+            return;
         }
     }
+    fclose(thread_in);
 }
 
 void swap_elements( int * first_element, int * second_element)
@@ -58,7 +70,7 @@ void swap_elements( int * first_element, int * second_element)
     * second_element = sub_element;
 }
 
-void quick_sort(ARRAY_vector * vector, int begin_index, int end_index)
+void quick_sort(ARRAY_vector * vector, const int begin_index, const int end_index)
 {
     int first_index = begin_index;
     int second_index = end_index;
@@ -90,23 +102,38 @@ void quick_sort(ARRAY_vector * vector, int begin_index, int end_index)
 
 void print_array( const ARRAY_vector * vector )
 {
+    FILE * thread_out = fopen("out.txt", "w");
     for (int index = 0; index < vector->array_len; index++)
     {
-        printf( "%d ", vector->array[index]);
+        if( -1 == fprintf(thread_out, "%d ", vector->array[index]))
+        {
+            printf( "__LINE__ %d", __LINE__);
+            break;
+        }
     }
+    fclose( thread_out );
 }
 
 int main( void )
 {
+    int flag = 0;
+    
     ARRAY_vector vector = create_vector();
-    prepare_vector( &vector);
+    prepare_vector( &vector, &flag);
+    if (flag != 0)
+    {
+        destroy_vector( &vector);
+        return 0;
+    }
+    
     if (vector.array_len > 1)
     {
         quick_sort( &vector, 0, vector.array_len - 1);
     }
-    print_array( &vector);
-    destroy_vector( &vector);
 
+    print_array( &vector);
+
+    destroy_vector( &vector);
+    
     return 0;
 }
-
