@@ -132,13 +132,11 @@ int main(void)
         return 0;
     }
 
-    if ( vector.array_len <= 1)
+    if ( vector.array_len > 1)
     {
-        destroy_vector( &vector);
-        return 0;
+        heap_sort(&vector);
     }
-    
-    heap_sort(&vector);
+
     print_array( &vector, &flag);
 
     destroy_vector( &vector);
