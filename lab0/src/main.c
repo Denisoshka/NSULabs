@@ -42,7 +42,6 @@ void scan_number(ST_vector * vector, FILE * thread_in, int * flag)
 {
     if( fscanf(thread_in, "%13s", vector->char_number) != 1 )
     {
-        fclose(thread_in );
         print_error_on_line(__LINE__, flag);
         return;
     }
