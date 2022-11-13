@@ -18,6 +18,7 @@ ARRAY_vector create_array_vector(void)
 void destroy_vector(ARRAY_vector * vector)
 {
     free( vector->array);
+    vector->array = NULL;
 }
 
 void swap(int * first, int * second)
