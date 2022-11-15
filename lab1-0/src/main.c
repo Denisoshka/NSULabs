@@ -5,41 +5,41 @@ const int K_max_pattern_len = 16,
           K_max_chunk_len = 1024,
           K_shift_table_size = 256;
 
-typedef struct vector{
+typedef struct our_custom_array{
     unsigned char * array;
     int array_len;
     int sub_index;
-}vector;
+}our_custom_array;
 
-vector create_vector( int necessary_array_len )
+our_custom_array create_custom_array(int necessary_array_len )
 {
-    vector blank = {
-            .array = NULL,
+    our_custom_array blank = {
+            .array = malloc( sizeof(char) * necessary_array_len ),
             .array_len = necessary_array_len,
             .sub_index = 0,
             };
     return blank;
 }
 
-void destroy_vector( vector * blank )
+void destroy_custom_array(our_custom_array * blank )
 {
     free( blank->array );
     blank->array = NULL;
 }
 
-void scan_pattern( vector * pattern, FILE * thread_in )
+void scan_pattern(our_custom_array * pattern, FILE * stream_in )
 {
     int index = 0;
     unsigned char symbol;
 
-    for ( ; ( 1 == fread( &symbol, sizeof(unsigned char), 1, thread_in ) ) && symbol != '\n'; index++)
+    for ( ; ( 1 == fread(&symbol, sizeof(unsigned char), 1, stream_in ) ) && symbol != '\n'; index++)
     {
         pattern->array[index] = symbol;
     }
     pattern->array_len = index;
 }
 
-void make_shift_table( const vector * pattern, int * shift_table )
+void make_shift_table(const our_custom_array * pattern, int * shift_table )
 {
     for ( int i = 0; i < K_shift_table_size; i++)
     {
@@ -55,7 +55,7 @@ void make_shift_table( const vector * pattern, int * shift_table )
     }
 }
 
-void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
+void text_rewrite(our_custom_array * text, const our_custom_array * pattern, FILE * stream_in )
 {
     const int K_where_start_rewrite = text->sub_index - pattern->array_len + 1;
     const int K_iterations_quantity = pattern->array_len - text->sub_index + text->array_len - 1;
@@ -64,15 +64,15 @@ void text_rewrite( vector * text, const vector * pattern, FILE * thread_in )
     {
         text->array[iteration] = text->array[K_where_start_rewrite + iteration];
     }
-    text -> array_len = (int)fread( text->array + K_iterations_quantity, sizeof( unsigned char), text->array_len - K_iterations_quantity, thread_in) + K_iterations_quantity;
+    text -> array_len = (int)fread( text->array + K_iterations_quantity, sizeof( unsigned char), text->array_len - K_iterations_quantity, stream_in) + K_iterations_quantity;
     text -> sub_index = pattern->array_len - 1;
 }
 
-void search_substring(vector * text, const vector * pattern, int * total_index, const int * shift_table, FILE * thread_out)
+void search_substring(our_custom_array * text, const our_custom_array * pattern, int * total_index, const int * shift_table, FILE * stream_out)
 {
     for( int pattern_work_index = pattern->array_len - 1, text_work_index = text -> sub_index; pattern_work_index>=0; pattern_work_index--, text_work_index--)
     {
-        fprintf( thread_out, "%d ", *total_index + pattern_work_index - pattern->array_len + 1 );
+        fprintf(stream_out, "%d ", *total_index + pattern_work_index - pattern->array_len + 1 );
 
         if( text->array[ text_work_index ] != pattern->array[ pattern_work_index ] )
         {
@@ -85,68 +85,67 @@ void search_substring(vector * text, const vector * pattern, int * total_index, 
     text->sub_index += pattern->array_len;
 }
 
-void booyer_moore_algorithm( const vector * pattern, const int * shift_table, FILE * thread_in)
+void booyer_moore_algorithm(const our_custom_array * pattern, const int * shift_table, FILE * stream_in)
 {
-    FILE * thread_out = fopen( "out.txt", "w");
-    if (thread_out == NULL)
+    FILE * stream_out = fopen("out.txt", "w");
+    if (stream_out == NULL)
     {
-        printf( "__LINE__ %d\n", __LINE__);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return;
     }
 
-    vector text = create_vector( K_max_chunk_len);
-    text.array = malloc( sizeof(unsigned char) * K_max_chunk_len);
+    our_custom_array text = create_custom_array(K_max_chunk_len);
     if (text.array == NULL)
     {
-        fclose( thread_out);
-        printf( "__LINE__ %d\n", __LINE__);
+        fclose(stream_out);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return;
     }
 
     int total_index = pattern->array_len;
     text.sub_index = pattern->array_len - 1;
-    text.array_len = (int)fread( text.array, sizeof (unsigned char ), K_max_chunk_len, thread_in);
+    text.array_len = (int)fread(text.array, sizeof (unsigned char ), K_max_chunk_len, stream_in);
 
     while ( pattern->array_len <= text.array_len )
     {
-        search_substring( &text, pattern, &total_index, shift_table, thread_out);
+        search_substring(&text, pattern, &total_index, shift_table, stream_out);
 
         if (text.sub_index >= text.array_len )
         {
-            text_rewrite( &text, pattern, thread_in);
+            text_rewrite(&text, pattern, stream_in);
         }
     }
 
-    fclose( thread_out);
-    destroy_vector( &text);
+    fclose(stream_out);
+    destroy_custom_array(&text);
 }
 
 int main(void)
 {
     int shift_table [ K_shift_table_size ];
 
-    FILE * thread_in = fopen( "in.txt", "r");
-    if ( thread_in == NULL )
+    FILE * stream_in = fopen("in.txt", "r");
+    if (stream_in == NULL )
     {
-        printf("__LINE__ %d\n", __LINE__);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 0;
     }
 
-    vector pattern = create_vector( K_max_pattern_len );
-    pattern.array = malloc( sizeof(unsigned char) * K_max_pattern_len );
+    our_custom_array pattern = create_custom_array(K_max_pattern_len);
     if ( pattern.array == NULL)
     {
-        fclose( thread_in );
-        printf("__LINE__ %d\n", __LINE__);
+        fclose(stream_in );
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 0;
     }
 
-    scan_pattern( &pattern, thread_in);
+    scan_pattern(&pattern, stream_in);
     make_shift_table( &pattern, shift_table );
-    booyer_moore_algorithm( &pattern, shift_table, thread_in );
+    
+    booyer_moore_algorithm(&pattern, shift_table, stream_in );
 
-    destroy_vector( &pattern);
-    fclose( thread_in );
+    fclose(stream_in );
+    destroy_custom_array(&pattern);
 
     return 0;
 }
