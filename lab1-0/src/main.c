@@ -14,7 +14,7 @@ typedef struct our_custom_array{
 our_custom_array create_custom_array(int necessary_array_len )
 {
     our_custom_array blank = {
-            .array = malloc( sizeof(char) * necessary_array_len ),
+            .array = malloc( sizeof(unsigned char) * necessary_array_len ),
             .array_len = necessary_array_len,
             .sub_index = 0,
             };
@@ -141,7 +141,7 @@ int main(void)
 
     scan_pattern(&pattern, stream_in);
     make_shift_table( &pattern, shift_table );
-    
+
     booyer_moore_algorithm(&pattern, shift_table, stream_in );
 
     fclose(stream_in );
