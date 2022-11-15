@@ -11,7 +11,7 @@ typedef struct our_custom_array{
     int sub_index;
 }our_custom_array;
 
-our_custom_array create_custom_array(int necessary_array_len )
+our_custom_array create_custom_array(const int necessary_array_len )
 {
     our_custom_array blank = {
             .array = malloc( sizeof(unsigned char) * necessary_array_len ),
