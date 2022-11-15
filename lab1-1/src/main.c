@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 const int K_max_pattern_len = 16,
-        K_max_chunk_len = 1024,
-        K_hash_base = 3;
+          K_max_chunk_len = 1024,
+          K_hash_base = 3;
 
 typedef struct our_custom_array{
     unsigned char * array;
@@ -64,7 +64,7 @@ int get_hash(our_custom_array * blank, const our_custom_array * pattern)
 void text_rewrite(our_custom_array * text, const our_custom_array * pattern, FILE * stream_in )
 {
     int where_start_rewrite = text->additional - pattern->array_len + 1;
-    int iterations_quantity = pattern->array_len - text->additional + text->array_len - 1;
+    const int iterations_quantity = pattern->array_len - text->additional + text->array_len - 1;
 
     for ( int iteration = 0; iteration < iterations_quantity ; iteration++, where_start_rewrite++)
     {
@@ -90,7 +90,7 @@ void update_hash_and_get(our_custom_array * text, const our_custom_array * patte
 
 void search_substring(our_custom_array * text, const our_custom_array * pattern, const int * total_index, FILE * stream_out)
 {
-    int print_index = * total_index - pattern->array_len + 1;
+    const int print_index = * total_index - pattern->array_len + 1;
 
     for( int pattern_work_index = 0, text_work_index = text->additional - pattern->array_len + 1; pattern_work_index < pattern->array_len; pattern_work_index++, text_work_index++)
     {
