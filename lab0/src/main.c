@@ -19,10 +19,10 @@ typedef struct ST_vector
     int fractional;
 }ST_vector;
 
-ST_vector make_vector(void)
+ST_vector make_vector( int memory_size )
 {
     ST_vector our_vector = {
-            .char_number = NULL,
+            .char_number = malloc( sizeof( char) * memory_size ),
             .dot_index = 0,
             .number_len = 0,
             .fractional = 0,
@@ -32,21 +32,15 @@ ST_vector make_vector(void)
 
 const char * K_all_symbols = "0123456789abcdef";
 
-void print_error_on_line( const int line, int * flag )
-{
-    printf( "line: %d", line);
-    * flag = 1;
-}
-
-void scan_number(ST_vector * vector, FILE * thread_in, int * flag)
+int scan_number(ST_vector * vector, FILE * thread_in)
 {
     if( fscanf(thread_in, "%13s", vector->char_number) != 1 )
     {
-        print_error_on_line(__LINE__, flag);
-        return;
+        printf( "__LINE__ %d", __LINE__);
+        return 1;
     }
-
     vector -> number_len = (int)strlen( vector->char_number);
+    return 0;
 }
 
 void destroy_vector( ST_vector * our_vector )
@@ -63,7 +57,7 @@ void make_lower_char(ST_vector * our_vector)
     }
 }
 
-void get_dot_index( ST_vector * our_vector )
+void update_dot_index( ST_vector * our_vector )
 {
     int index=0;
     for( ; index < our_vector->number_len; index++ )
@@ -81,7 +75,8 @@ int get_necessary_number( const char symbol )
     if ( ( '0' <= symbol) && (symbol <= '9' ) )
     {
         return K_base_numbers[ symbol - '0' ];
-    }else
+    }
+    else
     {
         return K_base_numbers[ symbol - 'a' + 10];
     }
@@ -89,9 +84,9 @@ int get_necessary_number( const char symbol )
 
 int is_symbol_less_base( const char symbol, const int K_base_from )
 {
-    int symbol_in_range_2_base_from = ( ( '0' <= symbol ) && ( symbol < '0' + K_base_from ) );
-    int symbol_in_range_a_base_from = ( ( 'a' <= symbol ) && ( symbol < 'a' + K_base_from - 10 ) );
-    int condition = ( symbol <= '9' ) ? symbol_in_range_2_base_from : symbol_in_range_a_base_from;
+    const int symbol_in_range_2_base_from = ( ( '0' <= symbol ) && ( symbol < '0' + K_base_from ) );
+    const int symbol_in_range_a_base_from = ( ( 'a' <= symbol ) && ( symbol < 'a' + K_base_from - 10 ) );
+    const int condition = ( symbol <= '9' ) ? symbol_in_range_2_base_from : symbol_in_range_a_base_from;
 
     return condition;
 }
@@ -176,7 +171,7 @@ double convert_from_char_fractional_part( const ST_vector * our_vector, const in
 
 void convert_to_char(ST_vector * vector, long long int non_fractional_part, double fractional_part, int non_fractional_part_len, const int K_base_to )
 {
-    int result_len = ( vector->fractional ) ? ( non_fractional_part_len + 1 + K_max_after_dot_numbers ) : non_fractional_part_len;
+    const int result_len = ( vector->fractional ) ? ( non_fractional_part_len + 1 + K_max_after_dot_numbers ) : non_fractional_part_len;
 
     vector->char_number = realloc(vector->char_number, (result_len + 1) * sizeof(char));
     if (vector->char_number == NULL )
@@ -209,7 +204,7 @@ void convert_to_char(ST_vector * vector, long long int non_fractional_part, doub
     vector->char_number[ result_len ] = '\0';
 }
 
-int get_non_fractional_part_len( const long long int non_fractional_result, int K_base_to)
+int get_non_fractional_part_len( const long long int non_fractional_result, const int K_base_to)
 {
     int non_fractional_result_len = 0;
     do{
@@ -221,9 +216,9 @@ int get_non_fractional_part_len( const long long int non_fractional_result, int 
 
 void convert_number(ST_vector *vector, const int K_base_from, const int K_base_to )
 {
-    long long int non_fractional_part = convert_from_char_non_fractional_part(vector, K_base_from);
-    double fractional_part = convert_from_char_fractional_part(vector, K_base_from );
-    int non_fractional_part_len = get_non_fractional_part_len( non_fractional_part, K_base_to);
+    const long long int non_fractional_part = convert_from_char_non_fractional_part(vector, K_base_from);
+    const double fractional_part = convert_from_char_fractional_part(vector, K_base_from );
+    const int non_fractional_part_len = get_non_fractional_part_len( non_fractional_part, K_base_to);
 
     convert_to_char(vector, non_fractional_part, fractional_part, non_fractional_part_len, K_base_to );
 }
@@ -242,7 +237,7 @@ void print_converted_number( const ST_vector *vector)
 
 int main(void )
 {
-    int flag= 0, base_from, base_to;
+    int base_from, base_to;
 
     FILE * thread_in = fopen( "in.txt", "r");
     if( thread_in == NULL)
@@ -258,8 +253,7 @@ int main(void )
         return 0;
     }
 
-    ST_vector vector = make_vector();
-    vector.char_number = malloc( sizeof(char) * (K_max_input_number_len + 1));
+    ST_vector vector = make_vector( K_max_input_number_len + 1 );
     if (vector.char_number == NULL)
     {
         printf( "__LINE__ %d", __LINE__);
@@ -267,8 +261,7 @@ int main(void )
         return 0;
     }
 
-    scan_number( &vector, thread_in, &flag );
-    if ( flag )
+    if ( scan_number( &vector, thread_in ) )
     {
         destroy_vector( &vector);
         fclose( thread_in);
@@ -278,7 +271,7 @@ int main(void )
     fclose( thread_in);
 
     make_lower_char( &vector );
-    get_dot_index( &vector );
+    update_dot_index( &vector );
     is_fractional( &vector);
 
     if ( is_valid_bases(base_from, base_to) && is_valid_char( &vector, base_from))
