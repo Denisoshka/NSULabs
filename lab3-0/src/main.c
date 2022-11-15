@@ -1,24 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct ARRAY_vector{
+typedef struct our_custom_array{
     int * array;
     int array_len;
-}ARRAY_vector;
+}our_custom_array;
 
-ARRAY_vector create_array_vector(void)
+our_custom_array create_custom_array(int array_len )
 {
-    ARRAY_vector vector ={
-            .array = NULL,
-            .array_len = 0,
+    our_custom_array vector ={
+            .array = malloc( sizeof(char) * array_len ),
+            .array_len = array_len,
     };
     return vector;
 }
 
-void destroy_vector(ARRAY_vector * vector)
+void destroy_custom_array(our_custom_array * custom_array)
 {
-    free( vector->array);
-    vector->array = NULL;
+    free(custom_array->array);
+    custom_array->array = NULL;
 }
 
 void swap(int * first, int * second)
@@ -28,118 +28,133 @@ void swap(int * first, int * second)
     * second = additional;
 }
 
-void print_error_on_line(int line, int * flag)
+int prepare_custom_array(our_custom_array * custom_array)
 {
-    printf( "line: %d", line);
-    * flag = 1;
-}
+    int array_len;
 
-void prepare_vector( ARRAY_vector * vector, int * flag)
-{
-    FILE * thread_in = fopen( "in.txt", "r");
-    if (thread_in == NULL)
+    FILE * steram_in = fopen("in.txt", "r");
+    if (steram_in == NULL)
     {
-        print_error_on_line(__LINE__, flag);
-        return;
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        return 1;
     }
 
-    if ( fscanf(thread_in,"%d", &vector->array_len) != 1 )
+    if (fscanf(steram_in, "%d", &array_len) != 1 )
     {
-        print_error_on_line(__LINE__, flag );
-        fclose(thread_in);
-        return;
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        fclose(steram_in);
+        return 1;
     }
 
-    vector -> array = malloc( vector -> array_len * sizeof(int));
-    if (vector->array == NULL)
+    * custom_array = create_custom_array( array_len );
+    if (custom_array->array == NULL)
     {
-        print_error_on_line(__LINE__, flag );
-        fclose(thread_in);
-        return;
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        fclose(steram_in);
+        return 1;
     }
 
-    for( int index = 0; index < vector->array_len; index++)
+    for(int index = 0; index < custom_array->array_len; index++)
     {
-        if ( fscanf(thread_in, "%d", &vector->array[index] ) != 1 )
+        if (fscanf(steram_in, "%d", &custom_array->array[index] ) != 1 )
         {
-            print_error_on_line(__LINE__, flag );
-            fclose(thread_in);
-            return;
+            fprintf( stderr, "__LINE__ %d\n", __LINE__);
+            fclose(steram_in);
+            return 1;
         }
     }
-    fclose(thread_in);
+    fclose(steram_in);
+    return 0;
 }
 
-void make_max_heap( ARRAY_vector * vector, const int array_len, const int root_index )
+void make_max_heap(our_custom_array * custom_array, const int array_len, const int root_index )
 {
     int max_element_index = root_index;
     const int left_index = 2 * root_index + 1,
               right_index = 2 * root_index + 2;
 
-    if ( left_index < array_len && vector->array[left_index] > vector->array[max_element_index] )
+    if ( left_index < array_len && custom_array->array[left_index] > custom_array->array[max_element_index] )
     {
         max_element_index = left_index;
     }
-    if (  right_index < array_len && vector->array[right_index] > vector->array[max_element_index])
+    if (  right_index < array_len && custom_array->array[right_index] > custom_array->array[max_element_index])
     {
         max_element_index = right_index;
     }
     if (max_element_index != root_index)
     {
-        swap(&vector->array[max_element_index], &vector->array[root_index]);
+        swap(&custom_array->array[max_element_index], &custom_array->array[root_index]);
 
-        make_max_heap(vector, array_len, max_element_index);
+        make_max_heap(custom_array, array_len, max_element_index);
     }
 }
 
-void heap_sort( ARRAY_vector * vector )
+void heap_sort( our_custom_array * custom_array )
 {
-    for( int index = vector -> array_len / 2 + 1; index >= 0; index--)
+    for(int index = custom_array -> array_len / 2 + 1; index >= 0; index--)
     {
-        make_max_heap( vector, vector -> array_len, index);
+        make_max_heap(custom_array, custom_array -> array_len, index);
     }
 
-    for( int index = vector -> array_len - 1; index >= 0; index--)
+    for(int index = custom_array -> array_len - 1; index >= 0; index--)
     {
-        swap(&vector->array[0], &vector->array[index]);
+        swap(&custom_array->array[0], &custom_array->array[index]);
 
-        make_max_heap(vector, index, 0);
+        make_max_heap(custom_array, index, 0);
     }
 }
 
-void print_array(const ARRAY_vector * vector, int * flag)
+int print_array(const our_custom_array * custom_array)
 {
     FILE * thread_out = fopen( "out.txt", "w");
-    for( int index = 0; index < vector->array_len; index++)
+    if ( thread_out == NULL)
     {
-        if (fprintf(thread_out, "%d ", vector->array[index]) == -1)
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        return 1;
+    }
+    for(int index = 0; index < custom_array->array_len; index++)
+    {
+        if (fprintf(thread_out, "%d ", custom_array->array[index]) == -1)
         {
-            print_error_on_line(__LINE__, flag);
-            break;
+            fprintf( stderr, "__LINE__ %d\n", __LINE__);
+            fclose( thread_out );
+            return 1;
         }
     }
     fclose( thread_out);
+    return 0;
 }
 
 int main(void)
 {
-    int flag = 0;
-    ARRAY_vector vector = create_array_vector();
-    prepare_vector( &vector, &flag);
-    if (flag != 0)
+    our_custom_array custom_array;
+
+    if (prepare_custom_array(&custom_array) )
     {
-        destroy_vector( &vector);
+        destroy_custom_array(&custom_array);
         return 0;
     }
-
-    if ( vector.array_len > 1)
+    
+    if ( custom_array.array_len <= 1 )
     {
-        heap_sort(&vector);
+        print_array( &custom_array );
+
+        destroy_custom_array(&custom_array);
+
+        return 0; 
     }
-
-    print_array( &vector, &flag);
-
-    destroy_vector( &vector);
-
+    
+    for (int index = 0; index < custom_array.array_len - 1; index++ )
+    {
+        if ( custom_array.array[index] >= custom_array.array[index + 1])
+        {
+            heap_sort(&custom_array);
+            break;
+        }
+    }
+    print_array( &custom_array );
+    
+    destroy_custom_array(&custom_array);
+    
     return 0;
 }
