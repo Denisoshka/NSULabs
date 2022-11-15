@@ -173,7 +173,6 @@ int main(void)
     }
 
     FILE * thread_out = fopen( "out.txt", "w");
-
     if ( thread_out == NULL)
     {
         printf( "__LINE__ %d", __LINE__);
