@@ -11,20 +11,14 @@ typedef struct ST_vector
     int permutations_quantity;
 }ST_vector;
 
-ST_vector create_vector(void)
+ST_vector create_vector( int memory_size )
 {
     ST_vector our_vector = {
-            .pattern = NULL,
+            .pattern = malloc( sizeof( char ) * memory_size ),
             .pattern_len = 0,
             .permutations_quantity = 0,
     };
     return our_vector;
-}
-
-void print_error_on_line( int line, int * flag )
-{
-    printf( "__LINE__ %d", line);
-    * flag = 1;
 }
 
 void swap(char * first, char * second)
@@ -40,17 +34,17 @@ void destroy_vector( ST_vector * our_vector)
     our_vector->pattern = NULL;
 }
 
-void scan_pattern( ST_vector * our_vector, int * flag )
+int scan_pattern( ST_vector * our_vector )
 {
     FILE * thread_in = fopen( "in.txt", "r");
-
     if ( thread_in == NULL )
     {
-        print_error_on_line( __LINE__, flag);
-        return;
+        printf( "__LINE__ %d", __LINE__);
+        return 1;
     }
 
     int iteration = 0;
+
     for ( char symbol; fread( &symbol, 1, sizeof(char), thread_in) != 0 && symbol!='\n'; iteration++)
     {
         if ( iteration>= K_chunk_len )
@@ -58,9 +52,9 @@ void scan_pattern( ST_vector * our_vector, int * flag )
             our_vector->pattern = realloc( our_vector->pattern, sizeof (char) * (iteration + K_chunk_len));
             if (our_vector == NULL)
             {
-                print_error_on_line( __LINE__, flag );
+                printf( "__LINE__ %d", __LINE__);
                 fclose( thread_in);
-                return ;
+                return 1;
             }
             our_vector->pattern[iteration] = symbol;
         }
@@ -74,11 +68,12 @@ void scan_pattern( ST_vector * our_vector, int * flag )
 
     if ( 1 != fscanf(thread_in, "%d", &our_vector->permutations_quantity))
     {
-        print_error_on_line( __LINE__, flag );
+        printf( "__LINE__ %d", __LINE__);
         fclose( thread_in);
-        return;
+        return 1;
     }
     fclose( thread_in);
+    return 0;
 }
 
 int is_string_correct( const ST_vector * our_vector )
@@ -89,16 +84,13 @@ int is_string_correct( const ST_vector * our_vector )
     {
         if ( '0' <= our_vector->pattern[index ] && our_vector->pattern[ index ] <= '9' )
         {
+            if ( arr[our_vector->pattern[index] - '0' ] >= 1 )
+            {
+                return 0;
+            }
             arr[our_vector->pattern[index] - '0']++;
         }
         else
-        {
-            return 0;
-        }
-    }
-    for( int index = 0; index < our_vector->pattern_len; index++ )
-    {
-        if( arr[ index ] > 1)
         {
             return 0;
         }
@@ -134,22 +126,17 @@ int find_second_necessary_index(const ST_vector * our_vector, const int first_ne
     return second_necessary_index;
 }
 
-void swap_symbols(ST_vector * our_vector, const int first_necessary_index, const int second_necessary_index)
+void swap_some_symbols(ST_vector * our_vector, const int first_necessary_index, const int second_necessary_index)
 {
     swap( &our_vector->pattern[ first_necessary_index ], &our_vector->pattern[ second_necessary_index ] );
 
-    int half_of_tail = ( our_vector->pattern_len - ( first_necessary_index + 1 ) ) / 2;
-
-    for(int index = 0; index < half_of_tail; index++  )
+    for(int front_index = first_necessary_index + 1, back_index = our_vector->pattern_len - 1; front_index < back_index; front_index++, back_index--  )
     {
-        int front_index = first_necessary_index + 1 + index,
-            back_index = our_vector->pattern_len - 1 - index;
-
         swap(&our_vector->pattern[ front_index ], &our_vector->pattern[ back_index ]);
     }
 }
 
-void print_permutation(ST_vector * vector )
+void print_permutation(ST_vector * vector, FILE * thread_out )
 {
     for(int iteration = 0; iteration < vector->permutations_quantity; iteration++)
     {
@@ -159,9 +146,9 @@ void print_permutation(ST_vector * vector )
         {
             int second_necessary_index = find_second_necessary_index(vector, first_necessary_index );
 
-            swap_symbols(vector, first_necessary_index, second_necessary_index );
+            swap_some_symbols(vector, first_necessary_index, second_necessary_index );
 
-            printf("%s\n", vector->pattern);
+            fprintf( thread_out,"%s\n", vector->pattern);
         }
         else
         {
@@ -172,27 +159,24 @@ void print_permutation(ST_vector * vector )
 
 int main(void)
 {
-
-    int flag = 0;
-    ST_vector vector = create_vector();
-    vector.pattern = malloc( K_chunk_len );
+    ST_vector vector = create_vector(K_chunk_len );
     if ( vector.pattern == NULL)
     {
-        print_error_on_line( __LINE__, &flag);
+        printf( "__LINE__ %d", __LINE__);
         return 0;
     }
 
-    scan_pattern(&vector, &flag);
-    if ( flag )
+    if ( scan_pattern(&vector) )
     {
         destroy_vector(&vector );
         return 0;
     }
 
     FILE * thread_out = fopen( "out.txt", "w");
+
     if ( thread_out == NULL)
     {
-        print_error_on_line( __LINE__, &flag);
+        printf( "__LINE__ %d", __LINE__);
         destroy_vector( &vector);
         return 0;
     }
@@ -205,7 +189,7 @@ int main(void)
         return 0;
     }
 
-    print_permutation(&vector);
+    print_permutation(&vector, thread_out);
 
     fclose( thread_out);
     destroy_vector(&vector );
