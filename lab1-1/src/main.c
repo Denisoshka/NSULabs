@@ -22,6 +22,7 @@ our_custom_array create_custom_array( const int necessary_array_len )
     };
     return blank;
 }
+
 void destroy_custom_array(our_custom_array * blank )
 {
     free( blank->array );
@@ -63,14 +64,15 @@ int get_hash(our_custom_array * blank, const our_custom_array * pattern)
 
 void text_rewrite(our_custom_array * text, const our_custom_array * pattern, FILE * stream_in )
 {
-    int where_start_rewrite = text->additional - pattern->array_len + 1;
+    int where_rewrite = text->additional - pattern->array_len + 1;
     const int iterations_quantity = pattern->array_len - text->additional + text->array_len - 1;
 
-    for ( int iteration = 0; iteration < iterations_quantity ; iteration++, where_start_rewrite++)
+    for ( int iteration = 0; iteration < iterations_quantity ; iteration++, where_rewrite++)
     {
-        text->array[iteration] = text->array[where_start_rewrite];
+        text->array[iteration] = text->array[where_rewrite];
     }
-    text -> array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, stream_in) + iterations_quantity;
+    
+    text->array_len = (int)fread( text->array + iterations_quantity, sizeof( unsigned char), text->array_len - iterations_quantity, stream_in) + iterations_quantity;
     text->additional = pattern->array_len - 1;
 }
 
