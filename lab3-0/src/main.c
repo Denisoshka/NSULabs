@@ -143,7 +143,6 @@ int main(void)
         print_array( &custom_array );
 
         destroy_custom_array(&custom_array);
-
         return 0;
     }
 
