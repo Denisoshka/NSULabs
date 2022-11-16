@@ -6,13 +6,13 @@ typedef struct our_custom_array{
     int array_len;
 }our_custom_array;
 
-our_custom_array create_custom_array(int array_len )
+our_custom_array create_custom_array( const int array_len )
 {
-    our_custom_array vector ={
-            .array = malloc( sizeof(char) * array_len ),
+    our_custom_array custom_array ={
+            .array = malloc( sizeof( int ) * array_len ),
             .array_len = array_len,
     };
-    return vector;
+    return custom_array;
 }
 
 void destroy_custom_array(our_custom_array * custom_array)
@@ -77,10 +77,12 @@ void make_max_heap(our_custom_array * custom_array, const int array_len, const i
     {
         max_element_index = left_index;
     }
+
     if (  right_index < array_len && custom_array->array[right_index] > custom_array->array[max_element_index])
     {
         max_element_index = right_index;
     }
+
     if (max_element_index != root_index)
     {
         swap(&custom_array->array[max_element_index], &custom_array->array[root_index]);
@@ -106,22 +108,23 @@ void heap_sort( our_custom_array * custom_array )
 
 int print_array(const our_custom_array * custom_array)
 {
-    FILE * thread_out = fopen( "out.txt", "w");
-    if ( thread_out == NULL)
+    FILE * stream_out = fopen("out.txt", "w");
+    if (stream_out == NULL)
     {
         fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 1;
     }
+
     for(int index = 0; index < custom_array->array_len; index++)
     {
-        if (fprintf(thread_out, "%d ", custom_array->array[index]) == -1)
+        if (fprintf(stream_out, "%d ", custom_array->array[index]) == -1)
         {
             fprintf( stderr, "__LINE__ %d\n", __LINE__);
-            fclose( thread_out );
+            fclose(stream_out );
             return 1;
         }
     }
-    fclose( thread_out);
+    fclose(stream_out);
     return 0;
 }
 
@@ -134,27 +137,27 @@ int main(void)
         destroy_custom_array(&custom_array);
         return 0;
     }
-    
+
     if ( custom_array.array_len <= 1 )
     {
         print_array( &custom_array );
 
         destroy_custom_array(&custom_array);
 
-        return 0; 
+        return 0;
     }
-    
+
     for (int index = 0; index < custom_array.array_len - 1; index++ )
     {
-        if ( custom_array.array[index] >= custom_array.array[index + 1])
+        if ( custom_array.array[index] > custom_array.array[index + 1])
         {
             heap_sort(&custom_array);
             break;
         }
     }
+
     print_array( &custom_array );
-    
+
     destroy_custom_array(&custom_array);
-    
     return 0;
 }
