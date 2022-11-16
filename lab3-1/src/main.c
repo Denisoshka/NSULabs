@@ -7,11 +7,11 @@ typedef struct our_custom_array
     int array_len;
 }our_custom_array;
 
-our_custom_array create_custom_array(const int array_size )
+our_custom_array create_custom_array(const int array_len )
 {
     our_custom_array custom_array = {
-            .array = malloc(sizeof( int ) * array_size ),
-            .array_len = array_size,
+            .array = malloc(sizeof( int ) * array_len ),
+            .array_len = array_len,
     };
     return custom_array;
 }
@@ -26,38 +26,39 @@ int prepare_custom_array(our_custom_array * custom_array)
 {
     int scanned_array_len;
 
-    FILE * thread_in = fopen( "in.txt", "r");
-    if ( thread_in == NULL)
+    FILE * stream_in = fopen("in.txt", "r");
+    if (stream_in == NULL)
     {
-        printf( "__LINE__ %d", __LINE__);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 1;
     }
 
-    if ( fscanf(thread_in,"%d", &scanned_array_len) != 1 )
+    if (fscanf(stream_in, "%d", &scanned_array_len) != 1 )
     {
-        printf( "__LINE__ %d", __LINE__);
-        fclose( thread_in);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        fclose(stream_in);
         return 1;
     }
 
-    * custom_array = create_custom_array(scanned_array_len);
+    * custom_array = create_custom_array(scanned_array_len );
     if (custom_array->array == NULL)
     {
-        printf( "__LINE__ %d", __LINE__);
-        fclose( thread_in);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        fclose(stream_in);
         return 1;
     }
 
     for (int index = 0; index < custom_array->array_len; index++)
     {
-        if(fscanf( thread_in,"%d", &custom_array->array[index]) != 1)
+        if(fscanf(stream_in, "%d", &custom_array->array[index]) != 1)
         {
-            printf( "__LINE__ %d", __LINE__);
-            fclose( thread_in);
+            fprintf( stderr, "__LINE__ %d\n", __LINE__);
+            fclose(stream_in);
             return 1;
         }
     }
-    fclose(thread_in);
+    
+    fclose(stream_in);
     return 0;
 }
 
@@ -97,45 +98,58 @@ void quick_sort(our_custom_array * custom_array, const int begin_index, const in
     }
 }
 
-int print_array( const our_custom_array * vector )
+int print_array( const our_custom_array * custom_array )
 {
-    FILE * thread_out = fopen("out.txt", "w");
-    if ( thread_out == NULL )
+    FILE * stream_out = fopen("out.txt", "w");
+    if (stream_out == NULL )
     {
-        printf( "__LINE__ %d", __LINE__);
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 1;
     }
-    for (int index = 0; index < vector->array_len; index++)
+    
+    for (int index = 0; index < custom_array->array_len; index++)
     {
-        if( fprintf(thread_out, "%d ", vector->array[index]) == -1  )
+        if(fprintf(stream_out, "%d ", custom_array->array[index]) == -1  )
         {
-            printf( "__LINE__ %d", __LINE__);
-            fclose( thread_out );
+            fprintf( stderr, "__LINE__ %d\n", __LINE__);
+            fclose(stream_out );
             return 1;
         }
     }
-    fclose( thread_out );
+    
+    fclose(stream_out );
     return 0;
 }
 
 int main( void )
 {
-    our_custom_array vector;
+    our_custom_array custom_array;
 
-    if ( prepare_custom_array(&vector) )
+    if ( prepare_custom_array(&custom_array) )
     {
-        destroy_custom_array(&vector);
+        destroy_custom_array(&custom_array);
         return 0;
     }
 
-    if (vector.array_len > 1)
+    if ( custom_array.array_len <= 1 )
     {
-        quick_sort( &vector, 0, vector.array_len - 1);
+        print_array( &custom_array );
+
+        destroy_custom_array(&custom_array);
+        return 0;
+    }
+    
+    for (int index = 0; index < custom_array.array_len - 1; index++ )
+    {
+        if ( custom_array.array[index] > custom_array.array[index + 1])
+        {
+            quick_sort(&custom_array, 0, custom_array.array_len - 1);
+            break;
+        }
     }
 
-    print_array( &vector);
+    print_array( &custom_array);
 
-    destroy_custom_array(&vector);
-
+    destroy_custom_array(&custom_array);
     return 0;
 }
