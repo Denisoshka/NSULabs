@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #define kMaxStackSize 1000
 #define kMaxExpressionSize 1000
@@ -88,7 +88,8 @@ ExpressionArray CreateExpressionString(void){
 
 int ScanExpression( ExpressionArray * Expression)
 {
-    FILE * StreamIn = fopen( "in.txt", "r");
+    //    FILE * StreamIn = fopen( "in.txt", "r");
+    FILE * StreamIn = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab4\\test\\in.txt", "r");
     if ( StreamIn == NULL ){
         fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 1;
@@ -121,8 +122,7 @@ int GetNumber( const char symbol ){
     return symbol - '0';
 }
 
-int GetNumberFromExpression( const ExpressionArray *Expression, int * Index )
-{
+int GetNumberFromExpression( const ExpressionArray *Expression, int * Index ){
     int result = 0;
     for ( ;( *Index < Expression->ArrayLen && isdigit( Expression->Array[*Index] ) ); (*Index)++){
         result *= 10;
@@ -132,8 +132,7 @@ int GetNumberFromExpression( const ExpressionArray *Expression, int * Index )
     return result;
 }
 
-int GetPriority( const char Symbol )
-{
+int GetPriority( const char Symbol ){
     switch (Symbol)
     {
         case '-': return 1;
@@ -144,9 +143,7 @@ int GetPriority( const char Symbol )
     }
 }
 
-int IsOperation(const char Symbol) {
-    return Symbol == '+' || Symbol == '-' || Symbol == '*' || Symbol == '/';
-}
+int IsOperation(const char Symbol) { return Symbol == '+' || Symbol == '-' || Symbol == '*' || Symbol == '/'; }
 
 int Calculate( IntStack *NumberStack, const char Operation){
     if ( IsEmptyIntStack( NumberStack) ){return kSyntaxError;}
@@ -215,12 +212,13 @@ int CalculateExpression(const ExpressionArray * Expression, IntStack * NumbersSt
 }
 
 int PrintExpressionResult( IntStack * NumberStack, CharStack * OperationStack, const int Flag){
-    FILE * StreamOut = fopen( "out.txt", "w");
+    //    FILE * StreamOut = fopen( "out.txt", "w");
+    FILE * StreamOut = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab4\\test\\out.txt", "w");
     if ( StreamOut == NULL ){fprintf( stderr, "__LINE__ %d", __LINE__);return 1;}
 
     if ( Flag || !IsEmptyCharStack(OperationStack ) || GetIntStackSize(NumberStack ) != 1 ){
-        if ( Flag == kSyntaxError ){ fprintf( StreamOut, "syntax error\n");}
         if ( Flag == kDivisionByZero){ fprintf( StreamOut, "division by zero\n");}
+        if ( Flag != kOtherError ){ fprintf( StreamOut, "syntax error\n");}
     }else{ fprintf( StreamOut, "%d\n", PopIntStack( NumberStack) ); }
 
     fclose( StreamOut);
