@@ -88,8 +88,7 @@ ExpressionArray CreateExpressionString(void){
 
 int ScanExpression( ExpressionArray * Expression)
 {
-    //    FILE * StreamIn = fopen( "in.txt", "r");
-    FILE * StreamIn = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab4\\test\\in.txt", "r");
+    FILE * StreamIn = fopen( "in.txt", "r");
     if ( StreamIn == NULL ){
         fprintf( stderr, "__LINE__ %d\n", __LINE__);
         return 1;
@@ -212,8 +211,7 @@ int CalculateExpression(const ExpressionArray * Expression, IntStack * NumbersSt
 }
 
 int PrintExpressionResult( IntStack * NumberStack, CharStack * OperationStack, const int Flag){
-    //    FILE * StreamOut = fopen( "out.txt", "w");
-    FILE * StreamOut = fopen( "C:\\Users\\dinis\\Desktop\\template-lab0\\lab4\\test\\out.txt", "w");
+    FILE * StreamOut = fopen( "out.txt", "w");
     if ( StreamOut == NULL ){fprintf( stderr, "__LINE__ %d", __LINE__);return 1;}
 
     if ( Flag || !IsEmptyCharStack(OperationStack ) || GetIntStackSize(NumberStack ) != 1 ){
