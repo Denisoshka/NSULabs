@@ -112,7 +112,7 @@ int ScanExpression( ExpressionArray * Expression)
         }
     }
     Expression->ArrayLen = Iteration;
-    
+
     fclose( StreamIn );
     return 0;
 }
@@ -197,7 +197,7 @@ int CalculateExpression(const ExpressionArray * Expression, IntStack * NumbersSt
             }
         }else if ( IsOperation(Expression->Array[Index]) ){
             if ( !IsEmptyCharStack( OperationsStack ) ) {
-                for ( int CalculationError; GetPriority(GetCharStack(OperationsStack) ) >= GetPriority(Expression->Array[Index]) && !IsEmptyCharStack( OperationsStack);) {
+                for ( int CalculationError; !IsEmptyCharStack( OperationsStack) && GetPriority(GetCharStack(OperationsStack) ) >= GetPriority(Expression->Array[Index]);) {
                     if ( (CalculationError = Calculate(NumbersStack, PopCharStack( OperationsStack))) ) { return CalculationError; }
                 }
                 if ( IsFullCharStack( OperationsStack) ) { fprintf( stderr, "__LINE__ %d", __LINE__ ); return kOtherError; }
