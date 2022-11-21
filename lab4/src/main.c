@@ -1,422 +1,241 @@
-#include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <ctype.h>
 
-const char actions_list[] = {'+', '-', '/', '*', '\0'};
+#define kMaxStackSize 1000
+#define kMaxExpressionSize 1000
 
-const char start_brackets_list[] = { '(', '\0' };
-
-const char end_brackets_list[] = { ')', '\0' };
-
-const int actions_priority[] = {1, 1, 2, 2};
-
-enum errors{
-    ALL_GOOD = 0,
-    SYNTAX_ERROR = -1,
-    DIVISION_BY_ZERO = -2,
-};
-enum move{
-    STAY = 0,
-    MOVE_AWAY = 1,
+enum kCalculationResult{
+    kSyntaxError = 1,
+    kDivisionByZero,
+    kOtherError,
 };
 
-void other_error(int line)
-{
-    printf( "line: %d", line);
-    exit( EXIT_SUCCESS);
+typedef struct IntStack{
+    int Array[kMaxStackSize];
+    int QuantityOfElemensts;
+}IntStack;
+
+IntStack CreateIntStack(void){
+    IntStack blank ={
+            .QuantityOfElemensts = 0,
+            };
+    return blank;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// vector funcks
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int IsEmptyIntStack( const IntStack * Stack ){
+    return Stack->QuantityOfElemensts == 0;
+}
 
-typedef struct symbol_vector
-{
-    char array[1001];
-    int array_len;
-}symbol_vector;
+int PopIntStack( IntStack * Stack ){
+    Stack->QuantityOfElemensts--;
+    return Stack->Array[Stack->QuantityOfElemensts];
+}
 
-typedef struct int_vector
-{
-    int array[1001];
-    int array_len;
-}int_vector;
+void PushIntStack(IntStack * Stack, const int PushedElement ){
+    Stack->Array[Stack->QuantityOfElemensts] = PushedElement;
+    Stack->QuantityOfElemensts++;
+}
 
-symbol_vector create_char_stack(void)
-{
-    symbol_vector vector = {
-            .array_len = 0,
+int GetIntStackSize( IntStack * Stack ){
+    return Stack->QuantityOfElemensts;
+}
+
+typedef struct CharStack{
+     char Array[kMaxStackSize];
+    int QuantityOfElemensts;
+}CharStack;
+
+CharStack CreateCharStack(void){
+    CharStack blank ={
+            .QuantityOfElemensts = 0,
     };
-    return vector;
+    return blank;
 }
 
-int_vector create_int_stack(void)
-{
-    int_vector vector = {
-            .array_len = 0,
+int IsEmptyCharStack( const CharStack * Stack ){
+    return Stack->QuantityOfElemensts == 0;
+}
+
+char PopCharStack( CharStack * Stack ){
+    Stack->QuantityOfElemensts--;
+    return Stack->Array[Stack->QuantityOfElemensts];
+}
+
+char GetCharStack( const CharStack * Stack ){
+    return Stack->Array[Stack->QuantityOfElemensts - 1];
+}
+
+int IsFullCharStack( const CharStack * Stack ){
+    return Stack->QuantityOfElemensts == kMaxStackSize;
+}
+
+void PushCharStack(CharStack * Stack, const int PushedElement ){
+    Stack->Array[Stack->QuantityOfElemensts] = PushedElement;
+    Stack->QuantityOfElemensts++;
+}
+
+typedef struct ExpressionArray{
+    char Array[kMaxExpressionSize];
+    int ArrayLen;
+}ExpressionArray;
+
+ExpressionArray CreateExpressionString(void){
+    ExpressionArray Blank = {
+            .ArrayLen = 0,
     };
-    return vector;
+    return Blank;
 }
 
-int prepare_string_vector(symbol_vector *vector)
+int ScanExpression( ExpressionArray * Expression)
 {
-//    FILE * thread_in = fopen( "C:\\Users\\dinis\\CLionProjects\\lab4\\in", "r");
-    FILE * thread_in = fopen( "in.txt", "r");
-    if ( fscanf( thread_in,"%1000[^\n]s", vector->array) != 1)
-    {
-        return SYNTAX_ERROR;
+    FILE * StreamIn = fopen( "in.txt", "r");
+    if ( StreamIn == NULL ){
+        fprintf( stderr, "__LINE__ %d\n", __LINE__);
+        return 1;
     }
-    vector->array_len = strlen( vector->array );
-    fclose( thread_in );
-    return ALL_GOOD;
+
+    int Iteration = 0;
+    for (char Symbol; Iteration < kMaxExpressionSize; Iteration++)
+    {
+        if ( 1 != fread( &Symbol, sizeof(char), 1, StreamIn) )
+        {
+            fprintf( stderr, "__LINE__ %d\n", __LINE__);
+            fclose( StreamIn );
+            return 1;
+        }
+
+        if( Symbol != '\n'){
+            Expression->Array[Iteration] = Symbol;
+        }
+        else{
+            break;
+        }
+    }
+    Expression->ArrayLen = Iteration;
+    
+    fclose( StreamIn );
+    return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// char stacks
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-int is_empty_char_stack(symbol_vector * vector )
-{
-    return vector->array_len == 0;
-}
-
-void push_char_stack( symbol_vector * vector, char symbol)
-{
-    vector->array[ vector->array_len] = symbol;
-
-    vector->array_len++;
-}
-
-char pop_char_stack( symbol_vector * vector)
-{
-    vector -> array_len--;
-    return vector -> array[ vector -> array_len ];
-}
-
-char get_char_stack( symbol_vector * vector )
-{
-    return vector->array[ vector->array_len - 1 ];
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// int stacks
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void push_int_stack( int_vector * vector, int number )
-{
-    vector->array[ vector->array_len ] = number;
-    vector->array_len++;
-}
-
-int pop_int_stack( int_vector * vector)
-{
-    vector -> array_len--;
-    return vector->array[ vector->array_len ];
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-int necessary_number( char symbol )
-{
+int GetNumber( const char symbol ){
     return symbol - '0';
 }
 
-int do_action( int first_number, int second_number, const char symbol_of_action)
+int GetNumberFromExpression( const ExpressionArray *Expression, int * Index )
 {
-    if ( symbol_of_action == '+' )
-    {
-        return first_number + second_number;
+    int result = 0;
+    for ( ;( *Index < Expression->ArrayLen && isdigit( Expression->Array[*Index] ) ); (*Index)++){
+        result *= 10;
+        result += GetNumber( Expression->Array[*Index] );
     }
-    if (symbol_of_action == '-')
-    {
-        return first_number - second_number;
-    }
-    if (symbol_of_action == '*')
-    {
-        return first_number * second_number;
-    }
-    if (symbol_of_action == '/')
-    {
-        return first_number / second_number;
-    }
-    return 0; //никогда не будет использоваться
+    (*Index)--;
+    return result;
 }
 
-int push_number_to_int_stack( int_vector * int_stack,symbol_vector * symbol_vector, const int start_index)
+int GetPriority( const char Symbol )
 {
-    char * string = symbol_vector->array;
-
-    int string_len = symbol_vector->array_len,
-        result = 0,
-        index = start_index,
-        end_index;
-
-    for ( ; index < string_len; index++)
+    switch (Symbol)
     {
-        if( !( ('0' <= string[index]) && (string[index] <= '9') ) )
+        case '-': return 1;
+        case '+': return 1;
+        case '*': return 2;
+        case '/': return 2;
+        default: return 0;
+    }
+}
+
+int IsOperation(const char Symbol) {
+    return Symbol == '+' || Symbol == '-' || Symbol == '*' || Symbol == '/';
+}
+
+int Calculate( IntStack *NumberStack, const char Operation){
+    if ( IsEmptyIntStack( NumberStack) ){return kSyntaxError;}
+    const int NewNumber = PopIntStack( NumberStack);
+
+    if ( IsEmptyIntStack( NumberStack) ){return kSyntaxError;}
+    const int OldNumber = PopIntStack( NumberStack);
+
+    switch ( Operation){
+        case '+':
+            PushIntStack( NumberStack, OldNumber + NewNumber);
             break;
-    }
-
-    end_index = index;
-
-    int back_index = index - start_index - 1;
-
-    for ( int iteration = 0 ; back_index >= 0;  )
-    {
-        result += necessary_number( string[start_index + iteration] ) * (int)pow( 10, back_index );
-        back_index--;
-        iteration++;
-    }
-
-    push_int_stack( int_stack, result );
-
-    return end_index;
-}
-
-
-int get_index_in_list( const char * where_search, char symbol)
-{
-    for ( int index = 0; where_search[ index ] != '\0'; index++ )
-    {
-        if ( where_search[index] == symbol )
-            return index;
-    }
-    return -1;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// main count function
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-int do_when_end_bracket( symbol_vector * char_stack, int_vector * int_stack ) {
-    char old_action;
-
-    int new_number,
-            old_number,
-            result;
-    // если не встретим открыв скобку то сожрем стек и пошлем пользователя нахуй
-    if (is_empty_char_stack(char_stack)) {
-        return SYNTAX_ERROR;
-    }
-
-    old_action = pop_char_stack(char_stack);
-
-    if (old_action == ')')
-    {
-        return SYNTAX_ERROR;
-    }
-    if (old_action == '(')
-    {
-    return MOVE_AWAY;
-    }
-
-    new_number = pop_int_stack( int_stack );
-    old_number = pop_int_stack( int_stack );
-
-    if ( old_action == '/' && new_number == 0)
-    {
-        return DIVISION_BY_ZERO;
-    }
-
-    result = do_action( old_number, new_number, old_action );
-
-    push_int_stack( int_stack, result );
-
-    return STAY;
-}
-
-
-
-int do_when_action(symbol_vector * char_stack, int_vector * int_stack, char action, int action_index)
-{
-    if(is_empty_char_stack( char_stack ))
-    {
-        push_char_stack( char_stack, action );
-
-        return MOVE_AWAY;
-    }
-    else
-    {
-        char old_action = get_char_stack( char_stack );
-
-        if ( old_action == ')' )
-        {
-            return SYNTAX_ERROR;
-        }
-
-        if ( old_action == '(' )
-        {
-            push_char_stack( char_stack, action );
-            return MOVE_AWAY;
-        }
-
-        int old_action_index = get_index_in_list( actions_list, old_action );
-
-        int action_priority = actions_priority[ action_index];
-        int old_action_priority = actions_priority[ old_action_index ];
-
-        if ( old_action_priority >= action_priority )
-        {
-            old_action = pop_char_stack( char_stack );
-            if( int_stack-> array_len < 2)
-            {
-                return SYNTAX_ERROR;
-            }
-            int new_number = pop_int_stack( int_stack );
-            int old_number = pop_int_stack( int_stack );
-
-            if ( old_action == '/' && new_number == 0 )
-            {
-                return DIVISION_BY_ZERO;
-            }
-
-            int result = do_action( old_number, new_number, old_action);
-            push_int_stack( int_stack, result );
-
-            return STAY;
-        }
-        else
-        {
-            push_char_stack( char_stack, action );
-            return MOVE_AWAY;
-        }
-    }
-    return 0; // neves uses
-}
-
-
-int final_calculations( int_vector * int_stack, symbol_vector * char_stack )
-{
-    while ( !is_empty_char_stack(char_stack) )
-    {
-        char action = pop_char_stack( char_stack);
-        if ( int_stack -> array_len < 2 )
-        {
-            return SYNTAX_ERROR;
-        }
-        if (get_index_in_list( actions_list, action ) == -1 )
-        {
-            return SYNTAX_ERROR;
-        }
-
-        int new_number = pop_int_stack( int_stack);
-        int old_number = pop_int_stack( int_stack);
-
-        if (action == '/' && new_number == 0 )
-        {
-            return DIVISION_BY_ZERO;
-        }
-        int result = do_action( old_number, new_number, action );
-        push_int_stack( int_stack, result);
-    }
-    if (  char_stack->array_len == 0 && int_stack->array_len == 1)
-    {
-        return ALL_GOOD;
-    }
-    else
-    {
-        return SYNTAX_ERROR;
-    }
-}
-
-int count_expression(symbol_vector * string_vector, symbol_vector * char_stack, int_vector * int_stack )
-{
-    char * string = string_vector->array;
-    int string_len = string_vector->array_len,
-
-            action_index,
-            flag = 0,
-
-        returned_result;
-
-    for (int index = 0 ; index < string_len ; )
-    {
-        char symbol = string[index];
-        int is_digit = '0' <= symbol && symbol <= '9';
-
-        if (is_digit)
-        {
-            index = push_number_to_int_stack( int_stack, string_vector, index);
-        }
-        else if ( get_index_in_list(start_brackets_list, symbol) != -1 )
-        {
-            if ( string[index+1] == ')')
-            {
-                flag = SYNTAX_ERROR;
-                break;
-            }
-            push_char_stack(char_stack, symbol);
-            index++;
-        }
-        else if ( get_index_in_list(end_brackets_list, symbol) != -1)
-        {
-            returned_result = do_when_end_bracket(char_stack, int_stack);
-
-            if ( returned_result < 0 )
-            {
-                flag = returned_result;
-                break;
-            }
-
-            index += returned_result;
-        }
-        else if ( ( action_index = get_index_in_list( actions_list, symbol ) ) != -1 )
-        {
-            returned_result = do_when_action(char_stack, int_stack, symbol, action_index);
-
-            if ( returned_result < 0 )
-            {
-                flag = -1;
-                break;
-            }
-
-            index += returned_result;
-        }
-        else
-        {
-            flag = SYNTAX_ERROR;
+        case '-':
+            PushIntStack( NumberStack, OldNumber - NewNumber);
             break;
-        }
+        case '*':
+            PushIntStack( NumberStack, OldNumber * NewNumber);
+            break;
+        case '/':
+            if ( NewNumber == 0 ){
+                return kDivisionByZero;
+            }
+            PushIntStack( NumberStack, OldNumber / NewNumber);
+            break;
+        default:
+            return kSyntaxError;
     }
+    return 0;
+}
 
-    if ( flag < 0 )
-    {
-        return flag;
+int CalculateExpression(const ExpressionArray * Expression, IntStack * NumbersStack, CharStack * OperationsStack ){
+    if ( Expression->Array[0] == ')' ){return kSyntaxError;}
+
+    for (int Index = 0; Index < Expression->ArrayLen; Index++){
+        if ( isdigit(Expression->Array[Index]) ){
+            PushIntStack( NumbersStack, GetNumberFromExpression( Expression, &Index));
+        }else if ( Expression->Array[Index] == '(' ){
+            PushCharStack( OperationsStack, Expression->Array[Index] );
+        }else if ( Expression->Array[Index] == ')' ){
+            if ( Expression->Array[ Index - 1 ] == '(' ) { return kSyntaxError; }
+            if (IsEmptyCharStack( OperationsStack)) { return kSyntaxError; }
+
+            char Operation = PopCharStack( OperationsStack);
+            for ( int CalculationError; Operation != '(' ; ) {
+                if ( (CalculationError = Calculate(NumbersStack, Operation)) ) { return CalculationError; }
+                if (IsEmptyCharStack( OperationsStack)) { return kSyntaxError; }
+                Operation = PopCharStack( OperationsStack);
+            }
+        }else if ( IsOperation(Expression->Array[Index]) ){
+            if ( !IsEmptyCharStack( OperationsStack ) ) {
+                for ( int CalculationError; GetPriority(GetCharStack(OperationsStack) ) >= GetPriority(Expression->Array[Index]) && !IsEmptyCharStack( OperationsStack);) {
+                    if ( (CalculationError = Calculate(NumbersStack, PopCharStack( OperationsStack))) ) { return CalculationError; }
+                }
+                if ( IsFullCharStack( OperationsStack) ) { fprintf( stderr, "__LINE__ %d", __LINE__ ); return kOtherError; }
+                PushCharStack( OperationsStack, Expression->Array[Index]);
+            }else{
+                if ( IsFullCharStack( OperationsStack) ) { fprintf( stderr, "__LINE__ %d", __LINE__ ); return kOtherError; }
+                PushCharStack( OperationsStack, Expression->Array[Index]);
+            }
+        }else{ return kSyntaxError; }
     }
+    for (int CalculationError; !IsEmptyCharStack( OperationsStack) ; ){
+        if ( (CalculationError = Calculate(NumbersStack, PopCharStack(OperationsStack))) ){ return CalculationError; }
+    }
+    return 0;
+}
 
-    return final_calculations( int_stack, char_stack );
+int PrintExpressionResult( IntStack * NumberStack, CharStack * OperationStack, const int Flag){
+    FILE * StreamOut = fopen( "out.txt", "w");
+    if ( StreamOut == NULL ){fprintf( stderr, "__LINE__ %d", __LINE__);return 1;}
+
+    if ( Flag || !IsEmptyCharStack(OperationStack ) || GetIntStackSize(NumberStack ) != 1 ){
+        if ( Flag == kSyntaxError ){ fprintf( StreamOut, "syntax error\n");}
+        if ( Flag == kDivisionByZero){ fprintf( StreamOut, "division by zero\n");}
+    }else{ fprintf( StreamOut, "%d\n", PopIntStack( NumberStack) ); }
+
+    fclose( StreamOut);
+    return 0;
 }
 
 int main(void)
 {
-    symbol_vector string_vector = create_char_stack();
-    symbol_vector char_stack = create_char_stack();
-    int_vector int_stack = create_int_stack();
+    ExpressionArray Expression = CreateExpressionString();
+    if ( ScanExpression( &Expression) ){ return 0; }
 
-    int flag = prepare_string_vector( &string_vector);
+    IntStack NumbersStack = CreateIntStack();
+    CharStack OperationsStack = CreateCharStack();
+    const int CalculationError = (Expression.ArrayLen == 0) ? kSyntaxError :CalculateExpression( &Expression, &NumbersStack, &OperationsStack );
+    PrintExpressionResult( &NumbersStack, &OperationsStack, CalculationError );
 
-    if ( flag == SYNTAX_ERROR)
-    {
-        printf( "syntax error");
-        return 0;
-    }
-
-    flag = count_expression( &string_vector, &char_stack, &int_stack);
-
-    if ( flag == ALL_GOOD )
-    {
-        printf("%d", int_stack.array[0]);
-    }
-    if ( flag == SYNTAX_ERROR)
-    {
-        printf( "syntax error");
-    }
-    if ( flag == DIVISION_BY_ZERO)
-    {
-        printf( "division by zero");
-    }
     return 0;
 }
