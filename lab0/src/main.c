@@ -158,10 +158,6 @@ int convert_to_char(our_custom_array *custom_array, long long int non_fractional
     non_fractional_part /= K_base_to;
   }
 
-  if (!custom_array->fractional) {
-    custom_array->array[result_len] = '\0';
-  }
-
   custom_array->array[non_fractional_part_len] = '.';
 
   for (int index = non_fractional_part_len + 1; index < result_len; index++) {
