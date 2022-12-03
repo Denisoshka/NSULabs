@@ -35,7 +35,7 @@ void destroy_custom_array(our_custom_array *custom_array) {
 
 char *our_realloc(char *array, const int new_memory_size) {
   char *old_pointer = array;
-  if ((array = realloc(array, new_memory_size * sizeof(char))) == NULL){
+  if ((array = realloc(array, new_memory_size)) == NULL){
     free(old_pointer);
     return NULL;
   }
@@ -235,8 +235,7 @@ int main(void) {
   update_dot_index(&custom_array);
   is_fractional(&custom_array);
 
-  if (is_valid_bases(base_from, base_to) &&
-      is_valid_char(&custom_array, base_from)) {
+  if (is_valid_bases(base_from, base_to) && is_valid_char(&custom_array, base_from)) {
     if (convert_number(&custom_array, base_from, base_to)) {
       destroy_custom_array(&custom_array);
       return 0;
@@ -250,3 +249,4 @@ int main(void) {
 
   return 0;
 }
+
