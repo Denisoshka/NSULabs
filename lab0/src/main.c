@@ -181,7 +181,9 @@ int get_non_fractional_part_len(const long long int non_fractional_result, const
 
 int convert_number(our_custom_array *custom_array, const int K_base_from, const int K_base_to) {
   const long long int non_fractional_part = convert_from_char_non_fractional_part(custom_array, K_base_from);
-  return convert_to_char(custom_array, non_fractional_part,convert_from_char_fractional_part(custom_array, K_base_from),get_non_fractional_part_len(non_fractional_part, K_base_to), K_base_to);
+  return convert_to_char(custom_array, non_fractional_part,
+                         convert_from_char_fractional_part(custom_array, K_base_from),
+                         get_non_fractional_part_len(non_fractional_part, K_base_to), K_base_to);
 }
 
 int print_converted_number(const our_custom_array *custom_array, int flag) {
@@ -249,4 +251,5 @@ int main(void) {
 
   return 0;
 }
+
 
