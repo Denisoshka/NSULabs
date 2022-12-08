@@ -1,9 +1,6 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.23)
 project(lab4 C)
 
-set(SRC src/main.c)
+set(CMAKE_C_STANDARD 23)
 
-add_executable(${PROJECT_NAME} ${SRC})
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../modules")
-include(common_lab)
+add_executable(lab4 main.c)
