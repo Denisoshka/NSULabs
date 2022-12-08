@@ -4,6 +4,12 @@
 #define kMaxStackSize 1000
 #define kMaxExpressionSize 1000
 
+enum kCalculationPriority{
+  kZeroPriority,
+  kFirstPriority,
+  kSecondPriority,
+};
+
 enum kCalculationResult {
   kSyntaxError = 1,
   kDivisionByZero,
@@ -132,15 +138,13 @@ int GetNumberFromExpression(const ExpressionArray *Expression, int *Index) {
 int GetPriority(const char Symbol) {
   switch (Symbol) {
     case '-':
-      return 1;
     case '+':
-      return 1;
+      return kFirstPriority;
     case '*':
-      return 2;
     case '/':
-      return 2;
+      return kSecondPriority;
     default:
-      return 0;
+      return kZeroPriority;
   }
 }
 
