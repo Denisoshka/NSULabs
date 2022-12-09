@@ -1,0 +1,67 @@
+# Generated from CLion C/C++ Code Style settings
+BasedOnStyle: Google
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: None
+AlignOperands: DontAlign #chage
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Never #chage
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None #chage
+AllowShortIfStatementsOnASingleLine: Never #chage
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: false #chage
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false #chage
+  AfterNamespace: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: true
+BreakBeforeBinaryOperators: All #chage
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon #chage
+BreakInheritanceList: AfterColon
+ColumnLimit: 80
+CompactNamespaces: false
+ContinuationIndentWidth: 8
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash #chage
+IndentWidth: 2
+KeepEmptyLinesAtTheStartOfBlocks: true
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+PointerAlignment: Middle
+ReflowComments: false
+SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true #chage
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 0
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+TabWidth: 2
+UseTab: Never
+SortIncludes: CaseInsensitive #chage
