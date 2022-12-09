@@ -5,9 +5,9 @@
 #define kMaxExpressionSize 1000
 
 enum kCalculationPriority{
-  kZeroPriority,
-  kFirstPriority,
-  kSecondPriority,
+  k0Priority,
+  k100Priority,
+  k200Priority,
 };
 
 enum kCalculationResult {
