@@ -139,12 +139,12 @@ int GetPriority(const char Symbol) {
   switch (Symbol) {
     case '-':
     case '+':
-      return kFirstPriority;
+      return k100Priority;
     case '*':
     case '/':
-      return kSecondPriority;
+      return k200Priority;
     default:
-      return kZeroPriority;
+      return k0Priority;
   }
 }
 
