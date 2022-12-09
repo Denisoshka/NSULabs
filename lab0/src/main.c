@@ -69,7 +69,7 @@ void update_dot_index(our_custom_array *custom_array) {
 }
 
 int get_necessary_number(const char symbol) {
-  if (('0' <= symbol) && (symbol <= '9')) {
+  if ('0' <= symbol && symbol <= '9') {
     return K_base_numbers[symbol - '0'];
   }
   else {
@@ -110,8 +110,8 @@ int is_valid_char(const our_custom_array *custom_array, const int K_base_from) {
 }
 
 int is_valid_bases(const int K_base_from, const int K_base_to) {
-  return (2 <= K_base_from && K_base_from <= 16 && 2 <= K_base_to
-          && K_base_to <= 16);
+  return ((2 <= K_base_from && K_base_from <= 16)
+          && (2 <= K_base_to && K_base_to <= 16));
 }
 
 void is_fractional(our_custom_array *custom_array) {
