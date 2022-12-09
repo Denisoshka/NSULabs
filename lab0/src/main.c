@@ -33,7 +33,7 @@ void destroy_custom_array(our_custom_array *custom_array) {
   custom_array->array = NULL;
 }
 
-char *our_realloc(char *array, const int new_memory_size) {
+void *our_realloc(char *array, const int new_memory_size) {
   char *old_pointer = array;
   if ((array = realloc(array, new_memory_size)) == NULL) {
     free(old_pointer);
